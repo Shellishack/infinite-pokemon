@@ -1,5 +1,9 @@
 # Infinite Pokémon
 
+> **Educational and non-commercial use only.** This is an experimental fan project, not an official Pokémon product. It is not affiliated with or endorsed by Nintendo, Creatures, GAME FREAK, or The Pokémon Company.
+>
+> **Generated with Codex.** This repository was generated using OpenAI Codex under human direction. Third-party dependencies and reference assets were incorporated into the project; they were not created by Codex and retain their respective ownership and license terms. See [DISCLAIMER.md](DISCLAIMER.md) and [asset credits](game/assets/classic/CREDITS.md).
+
 ![Infinite Pokémon](game/assets/branding/infinite-pokemon-logo.svg)
 
 **The adventure never ends.**
