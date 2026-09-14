@@ -1,0 +1,4 @@
+interface:
+  display_name: "Infinite Pokémon"
+  short_description: "Set up and launch your Infinite Pokémon adventure"
+  default_prompt: "Use $infinite-pokemon to set up and start the game for me."

@@ -1,10 +1,20 @@
 # Infinite Pokémon（无限宝可梦）
 
-[English](README.md) | **简体中文** · [GitHub 仓库](https://github.com/Shellishack/infinite-pokemon) · [技能下载](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.1.0) · [技术报告 v0.4（PDF，暂定稿）](docs/technical-report/Infinite-Pokemon-Technical-Report-v0.4.pdf)
+[English](README.md) | **简体中文** · [GitHub 仓库](https://github.com/Shellishack/infinite-pokemon) · [技能下载](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.2.0) · [技术报告 v0.4（PDF，暂定稿）](docs/technical-report/Infinite-Pokemon-Technical-Report-v0.4.pdf)
+
+## 让 AI 帮你开始游戏
+
+```sh
+npx skills add Shellishack/infinite-pokemon --skill infinite-pokemon
+```
+
+然后告诉 Codex（或兼容的 AI 助手）：**“使用 $infinite-pokemon，帮我配置并启动游戏。”** 入口技能会指导 AI 克隆缺失的游戏文件、检查环境、安装依赖、构建并启动。你在游戏内完成 Codex 登录与额度授权，或选择无需 AI 的教程预览。
+
+安装技能本身不会启动软件。Skills CLI 需要仓库来源，单独的 `npx skills add infinite-pokemon` 不是受支持的全局别名。详见[入口技能](skills/infinite-pokemon/SKILL.md)。
 
 > **仅供教育与非商业用途。** 本项目是实验性的爱好者作品，并非官方宝可梦产品，与 Nintendo、Creatures、GAME FREAK 或 The Pokémon Company 无关联，也未获得其背书。
 >
-> **由 Codex 生成。** 项目代码、文档和开发工具由 OpenAI Codex 在人工指导下生成。引入的第三方依赖与参考素材并非 Codex 原创，其所有权及许可条款仍然适用。详见[免责声明](DISCLAIMER.md)与[素材来源](game/assets/classic/CREDITS.md)。三个独立技能指令包获准采用 MIT-0，具体范围见下文。
+> **由 Codex 生成。** 项目代码、文档和开发工具由 OpenAI Codex 在人工指导下生成。引入的第三方依赖与参考素材并非 Codex 原创，其所有权及许可条款仍然适用。详见[免责声明](DISCLAIMER.md)与[素材来源](game/assets/classic/CREDITS.md)。四个独立技能指令包获准采用 MIT-0，具体范围见下文。
 
 ![Infinite Pokémon](game/assets/branding/infinite-pokemon-logo.svg)
 
@@ -180,10 +190,11 @@ docker compose exec game node node_modules/@openai/codex/bin/codex.js login --de
 
 ## 技能与安装
 
-三个独立技能包已按 **MIT-0** 授权，允许复用其中的指令文件。该例外不包含技能目录之外的游戏代码、素材或品牌内容；各包附带 LICENSE。游戏本身直接加载内置技能，游玩不需要额外执行安装命令。
+四个独立技能包已按 **MIT-0** 授权，允许复用其中的指令文件。该例外不包含技能目录之外的游戏代码、素材或品牌内容；各包附带 LICENSE。游戏本身直接加载内置技能，游玩不需要额外执行安装命令。
 
 | 技能 | 用途 |
 | --- | --- |
+| [infinite-pokemon](skills/infinite-pokemon/SKILL.md) | 按用户要求配置并启动游戏 |
 | [infinite-pokemon-region](skills/infinite-pokemon-region/SKILL.md) | 根据存档上下文提出地图、地形与内容方案 |
 | [infinite-pokemon-npc](skills/infinite-pokemon-npc/SKILL.md) | 对话、记忆、意图与可选移动策略 |
 | [infinite-pokemon-interior](skills/infinite-pokemon-interior/SKILL.md) | 固定房间内的家具、地毯和描述 |
@@ -194,7 +205,7 @@ docker compose exec game node node_modules/@openai/codex/bin/codex.js login --de
 npx skills add Shellishack/infinite-pokemon --skill infinite-pokemon-region --skill infinite-pokemon-npc --skill infinite-pokemon-interior
 ```
 
-技能需要房主提供上下文和输出格式；安装技能并不等于安装完整游戏。见[技能说明](skills/README.md)、[版本化 ZIP 下载](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.1.0)和[发布状态](docs/SKILL-DISTRIBUTION.md)。不同索引站的同步与审核可能尚未完成。
+技能需要房主提供上下文和输出格式；安装技能并不等于安装完整游戏。见[技能说明](skills/README.md)、[版本化 ZIP 下载](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.2.0)和[发布状态](docs/SKILL-DISTRIBUTION.md)。不同索引站的同步与审核可能尚未完成。
 
 ## 音乐与音效
 

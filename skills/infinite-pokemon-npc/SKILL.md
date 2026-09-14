@@ -4,12 +4,14 @@ description: Generate grounded NPC intentions, dialogue, memory and optional mov
 license: MIT-0
 metadata:
   author: Shellishack
-  version: "0.1.1"
+  version: "0.2.0"
   homepage: https://github.com/Shellishack/infinite-pokemon
   repository: https://github.com/Shellishack/infinite-pokemon
 ---
 
 ## Before playing: get the complete game
+
+For user-requested setup and launch, the [infinite-pokemon entry skill](https://github.com/Shellishack/infinite-pokemon/tree/main/skills/infinite-pokemon) provides the complete workflow. The setup instructions below also work when only this bundle is installed.
 
 Installing this skill alone does not install Infinite Pokémon. If the game checkout or any required project file is missing, first try to clone the complete [GitHub repository](https://github.com/Shellishack/infinite-pokemon) into a new local directory before starting play:
 
