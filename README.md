@@ -250,7 +250,7 @@ Generated content is private to each saved run: `<save-data-directory>/generated
 
 ## Install the generation skills
 
-The four [setup and generation skill bundles](skills/README.md) are available separately under MIT-0. They produce structured proposals for a compatible host; installing them does not install the game. The game and asset disclaimer remains separate.
+The four [setup and generation skill bundles](skills/README.md) are available separately under MIT-0. The entry skill guides your AI through setup and launch; the three generation skills produce structured proposals for a compatible host. Installing instructions alone does not install or launch the game. The game and asset disclaimer remains separate.
 
 ```sh
 npx skills add Shellishack/infinite-pokemon --skill infinite-pokemon-region --skill infinite-pokemon-npc --skill infinite-pokemon-interior
