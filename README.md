@@ -235,3 +235,11 @@ The engine currently accepts the server's SQLite Store through type-only imports
 Run `npm run dev` for development, or `npm run build` followed by `npm run desktop` for the desktop game.
 
 Generated content is private to each saved run: `<save-data-directory>/generated-content/` contains map proposals, compiled maps and generation diagnostics. The save database remains authoritative for maps and NPC state; checkpoints preserve it when branching. These artifact folders are Git-ignored and are never served as frontend assets. Older `generation/` diagnostics remain readable on disk and are also cleared by a full game reset.
+
+## Install the generation skills
+
+The three [generation skill bundles](skills/README.md) are available separately under MIT-0. They produce structured proposals for a compatible host; installing them does not install the game. The game and asset disclaimer remains separate.
+
+```sh
+npx skills add Shellishack/infinite-pokemon --skill infinite-pokemon-region --skill infinite-pokemon-npc --skill infinite-pokemon-interior
+```
