@@ -19,3 +19,5 @@ npx skills add Shellishack/infinite-pokemon --skill infinite-pokemon-region --sk
 The game loads its bundled skills directly, so playing does not require this separate installation. Region includes local copies of the NPC/interior contracts so individual registry installations remain self-contained. Keep those copies synchronized when changing the canonical contracts.
 
 The three instruction bundles are released under MIT-0 (see each bundle’s LICENSE), including commercial reuse of the instructions. This exception does not include game code, artwork or branding. See the [project disclaimer](../DISCLAIMER.md).
+
+See [registry publication status](../docs/SKILL-DISTRIBUTION.md) and [versioned downloads](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.1.0).
