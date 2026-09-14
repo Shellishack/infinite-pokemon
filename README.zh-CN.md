@@ -14,7 +14,7 @@ npx skills add Shellishack/infinite-pokemon --skill infinite-pokemon
 
 > **仅供教育与非商业用途。** 本项目是实验性的爱好者作品，并非官方宝可梦产品，与 Nintendo、Creatures、GAME FREAK 或 The Pokémon Company 无关联，也未获得其背书。
 >
-> **由 Codex 生成。** 项目代码、文档和开发工具由 OpenAI Codex 在人工指导下生成。引入的第三方依赖与参考素材并非 Codex 原创，其所有权及许可条款仍然适用。详见[免责声明](DISCLAIMER.md)与[素材来源](game/assets/classic/CREDITS.md)。四个独立技能指令包获准采用 MIT-0，具体范围见下文。
+> **由 Codex 生成。** 人类提供大致的想法，OpenAI Codex 据此生成项目代码、文档和开发工具。引入的第三方依赖与参考素材并非 Codex 原创，其所有权及许可条款仍然适用。详见[免责声明](DISCLAIMER.md)与[素材来源](game/assets/classic/CREDITS.md)。四个独立技能指令包获准采用 MIT-0，具体范围见下文。
 
 ![Infinite Pokémon](game/assets/branding/infinite-pokemon-logo.svg)
 
