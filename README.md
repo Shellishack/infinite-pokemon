@@ -4,6 +4,10 @@
 
 **The adventure never ends.**
 
+![Infinite Pokémon intro: gameplay becomes context for Codex to create the next part of your adventure](docs/assets/infinite-pokemon-intro.gif)
+
+*Watch the 35-second intro: play, build a shared history, and let Codex help create what comes next.*
+
 Infinite Pokémon explores a simple idea: a game world can keep being written as you play. Walk toward a new horizon, and a local AI harness uses the history of your adventure to propose what comes next—places, characters, conversations, and story hooks. Return to a place you know, and it should remain part of the same world, with your progress and consequences intact.
 
 This is a playable TypeScript prototype of that idea, presented as a Pokémon-style pixel-art creature-catching RPG powered by an AI harness. The goal is a continuing adventure shaped by play, with familiar controls and dependable game rules. Open-ended generation is the ambition; finite storage, generation time, provider limits, and the current engine's vocabulary still constrain every run.
