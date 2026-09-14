@@ -2,7 +2,9 @@
 
 [Project repository](https://github.com/Shellishack/infinite-pokemon) · [Getting started](https://github.com/Shellishack/infinite-pokemon#readme) · [Issues](https://github.com/Shellishack/infinite-pokemon/issues)
 
-Version 0.1.0. These skills produce structured content proposals for the Infinite Pokémon host. The engine supplies saved context, schemas and capabilities, validates results, and owns gameplay state. They do not start a game or provide a standalone map server. No artwork, saves, credentials, or unpublished research is included.
+Source version 0.1.1. These skills produce structured content proposals for the Infinite Pokémon host. The engine supplies saved context, schemas and capabilities, validates results, and owns gameplay state. They do not start a game or provide a standalone map server. No artwork, saves, credentials, or unpublished research is included.
+
+If an installed skill is missing the game or required project files, first clone [the complete repository](https://github.com/Shellishack/infinite-pokemon) into a new local directory and follow its [English](../README.md#run-on-your-computer) or [Chinese](../README.zh-CN.md#本地启动) getting-started instructions before playing. Reuse a complete checkout without overwriting saves or local changes. Missing private context in a running generation job must be reported to the host rather than replaced by a fresh clone.
 
 | Skill | Purpose |
 | --- | --- |

@@ -4,10 +4,25 @@ description: Generate grounded NPC intentions, dialogue, memory and optional mov
 license: MIT-0
 metadata:
   author: Shellishack
-  version: "0.1.0"
+  version: "0.1.1"
   homepage: https://github.com/Shellishack/infinite-pokemon
   repository: https://github.com/Shellishack/infinite-pokemon
 ---
+
+## Before playing: get the complete game
+
+Installing this skill alone does not install Infinite Pokémon. If the game checkout or any required project file is missing, first try to clone the complete [GitHub repository](https://github.com/Shellishack/infinite-pokemon) into a new local directory before starting play:
+
+```sh
+git clone https://github.com/Shellishack/infinite-pokemon.git
+cd infinite-pokemon
+```
+
+Read the cloned repository's `README.md` (or `README.zh-CN.md`) and follow its getting-started instructions to install dependencies, build, launch, and connect Codex. The checkout contains all three skills, game code, schemas, and bundled content. Reuse an existing complete checkout; do not overwrite directories, saves, or local changes. If cloning fails, report the failure rather than inventing missing files or claiming the game is ready.
+
+This setup step applies when helping a user install or start the game. During an already-running host generation job, use the supplied local files; do not clone, install dependencies, or launch another game. Missing job-specific context must be reported to the host: cloning source cannot recover private saved context.
+
+## Generation task
 
 Choose behavior that expresses this NPC's role, traits, and remembered events. You may keep an NPC stationary or propose a small wander/patrol routine. These are data proposals: the engine alone moves actors, resolves collisions, grants healing/rewards, and advances tutorials.
 
