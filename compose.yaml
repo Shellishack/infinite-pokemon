@@ -1,0 +1,38 @@
+name: infinite-pokemon
+
+services:
+  game:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: infinite-pokemon:local
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 15s
+    # Linux Docker Engine: preserve the server's 127.0.0.1-only admin listener.
+    # Bridge-mode port publication cannot reach that loopback-bound listener.
+    # No public reverse proxy may target 8788 or the Codex process.
+    network_mode: host
+    environment:
+      PORT: "8787"
+      ADMIN_PORT: "8788"
+      INFINITE_DATA_DIR: /app/data
+      CODEX_HOME: /home/node/.codex
+      CODEX_EXECUTABLE: /app/node_modules/@openai/codex/bin/codex.js
+    volumes:
+      - world-data:/app/data
+      - codex-private:/home/node/.codex
+    healthcheck:
+      # Process health, not game readiness: the owner may still need to connect.
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8787/api/info').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+volumes:
+  # Keep existing installations attached to their saved world and credentials.
+  world-data:
+    name: ${INFINITE_WORLD_VOLUME:-infinite-pokemon_world-data}
+  codex-private:
+    name: ${INFINITE_CODEX_VOLUME:-infinite-pokemon_codex-private}

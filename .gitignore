@@ -1,0 +1,96 @@
+# Dependencies and build/package output
+node_modules/
+/dist/
+/dist-server/
+/out/
+/release/
+/coverage/
+/.vite/
+/.cache/
+/.turbo/
+*.tsbuildinfo
+
+# Local worlds, saves, harness context and generated runtime data
+/data/
+/data-*/
+/test-data/
+/.test-data/
+/save-library/
+/context/
+/generation/
+/harness/
+/backups/
+/previews/
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+
+# Credentials and machine-local configuration
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+**/auth.json
+**/credentials.json
+*.pem
+*.key
+*.p12
+*.pfx
+.npmrc
+/.codex/
+/.agents/
+
+# Private paper and unpublished research results
+/.local-research/
+/research/results/
+/research/figures/
+
+# Test captures, scratch work and generated reports
+/test-results/
+/playwright-report/
+/blob-report/
+/artifacts/
+/screenshots/
+/tmp/
+/temp/
+/output/
+*.log
+*.log.*
+*.pid
+*.pid.lock
+
+# OS/editor-local files
+.DS_Store
+Thumbs.db
+Desktop.ini
+/.idea/
+/.vscode/
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# Keep source, bundled skills, preview content, package-lock.json,
+# and shipped assets in game/assets/ (music, SFX, sprites and icons).
+
+# Generated asset review sheets and superseded branding drafts
+/game/assets/classic/terrain-contact*.png
+/game/assets/classic/terrain-reference*.png
+/game/assets/classic/interior/contact-*.png
+/game/assets/branding/infinite-tamer-adventure-logo-v1.png
+/game/assets/branding/logo-prompt.txt
+
+# Other common local credential stores
+.envrc
+.envrc.local
+id_rsa
+id_ed25519
+*.kdbx
+*.keystore
+
+# Runtime generation artifacts are private to each saved run.
+**/generated-content/

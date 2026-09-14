@@ -1,0 +1,211 @@
+import assert from 'node:assert/strict';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { resolve, join } from 'node:path';
+import { randomUUID, createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { chromium, expect, type Page } from '@playwright/test';
+import { createGameServer } from '../game/server/index.js';
+import { DIRECTIONS } from '../game/shared/model.js';
+import { BrowserGame } from './browser-game.js';
+
+// Real browser UI and real HTTP/WebSocket server. Only model output is substituted.
+const started = new Date();
+const runId = randomUUID();
+const dataDir = resolve('.test-data', `e2e-${runId}`);
+const figures = resolve('.test-data/verification/figures');
+mkdirSync(figures, { recursive: true });
+mkdirSync(resolve('.test-data/verification'), { recursive: true });
+const app = await createGameServer({ dataDir, port: 0, adminPort: 0, host: '127.0.0.1', fixture: true });
+app.store.setMeta('seed', 'e2e-willow-2026-v1');
+const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const errors: string[] = [];
+const expectedFaults: string[] = [];
+const outagePages = new WeakSet<Page>();
+const screenshots: { file: string; caption: string; sha256: string; viewport: unknown }[] = [];
+const checks: string[] = [];
+const hostContext = await browser.newContext({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });
+const guestContext = await browser.newContext({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });
+function observe(page: Page) {
+  page.on('pageerror', e => errors.push(`pageerror: ${e.message}`));
+  page.on('console', message => { if (message.type() === 'error') { if(outagePages.has(page)&&message.text().includes('503'))expectedFaults.push('Injected join outage: '+message.text());else errors.push(`console: ${message.text()}`); } });
+}
+async function screenshot(page: Page, name: string, caption: string) {
+  await expect.poll(() => page.evaluate(() => [...document.images].every(img => img.complete && img.naturalWidth > 0))).toBe(true);
+  await page.evaluate(async () => { await document.fonts.ready; await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r()))); });
+  const path = join(figures, name);
+  await page.screenshot({ path, fullPage: true, animations: 'disabled' });
+  screenshots.push({ file: `.test-data/verification/figures/${name}`, caption: `${caption} Deterministic test harness; no AI-generated story content.`, sha256: createHash('sha256').update(readFileSync(path)).digest('hex'), viewport: page.viewportSize() });
+}
+const player = (name: string) => app.store.players().find(p => p.name === name)!;
+async function introAndStarter(page: Page, name: string, starter: string) {
+  const intro = page.getByRole('dialog', { name: 'The valley beyond the map' });
+  await expect(intro).toBeVisible();
+  await intro.getByRole('button', { name: 'Continue', exact: true }).click();
+  await expect(intro).toContainText('2 / 3');
+  await intro.getByRole('button', { name: 'Continue', exact: true }).click();
+  await intro.getByRole('button', { name: 'Step into Willowbrook' }).click();
+  await page.getByRole('dialog', { name: 'Choose your first companion' }).getByRole('button', { name: new RegExp(starter) }).click();
+  await page.getByRole('dialog', { name: 'A friendship begins' }).getByRole('button', { name: /Continue/ }).click();
+  await expect.poll(() => player(name)?.party.length).toBe(1);
+  await expect(page.locator('.game-canvas canvas')).toBeVisible();
+}
+async function noOverflow(page: Page) {
+  const sizes = await page.evaluate(() => ({ viewport: innerWidth, body: document.body.scrollWidth, root: document.documentElement.scrollWidth }));
+  assert.ok(sizes.body <= sizes.viewport + 1 && sizes.root <= sizes.viewport + 1, `Horizontal overflow: ${JSON.stringify(sizes)}`);
+}
+try {
+  const hostPage = await hostContext.newPage(); observe(hostPage);
+  await hostPage.goto('http://127.0.0.1:'+app.adminPort);
+  const titleButtons = hostPage.getByRole('navigation', { name: 'Title menu' }).getByRole('button');
+  await expect(titleButtons).toHaveCount(2);
+  assert.deepEqual(await titleButtons.allTextContents(), ['Single player','Multiplayer']);
+  await screenshot(hostPage, '01-welcome.png', 'Title screen offers exactly Single player and Multiplayer.');
+  await hostPage.getByRole('button', { name: 'Single player', exact: true }).click();
+  await expect(hostPage.getByRole('button',{name:'Connect to Codex',exact:true})).toBeVisible();
+  await expect(hostPage.getByLabel('Generation batch size')).not.toBeVisible();
+  await expect(hostPage.getByLabel('Map generation depth')).not.toBeVisible();
+  await expect(hostPage.getByLabel('Generation job budget')).toHaveCount(0);
+  assert.equal(app.ready,false);assert.equal(app.generator.verified,false);
+  await screenshot(hostPage, '02-connect-harness.png', 'Centered one-click Codex connection, finite preview and collapsed optional settings.');
+  await hostPage.getByRole('button',{name:'Connect to Codex',exact:true}).click();
+  checks.push('Connection disclosure precedes a single button that connects, verifies and enters; settings stay optional.');
+  await expect.poll(() => app.ready).toBe(true);
+  assert.equal(app.store.regions().length, 5);assert.equal(app.generator.status.limit,Number.MAX_SAFE_INTEGER);assert.equal(JSON.parse(app.store.meta('hostConsent')!).version,1);
+  assert.equal(app.generator.status.mode, 'test');
+  assert.equal(app.store.meta('sessionMode'), 'singleplayer');
+  const soloAdmission = await fetch('http://127.0.0.1:'+app.port+'/api/join', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:'Not admitted'})});
+  assert.equal(soloAdmission.status, 403);
+  checks.push('Five local server maps prepare automatically; single player enters with the default Trainer nickname and public guest admission stays closed.');
+  await introAndStarter(hostPage, 'Trainer', 'Bulbasaur');
+  const hostGame=new BrowserGame(hostPage,()=>player('Trainer'),id=>app.store.region(id));
+  await hostGame.interact(hostGame.object('guide'));
+  await expect(hostPage.getByRole('dialog')).toContainText('Lesson complete!');
+  await hostPage.getByRole('dialog').getByRole('button', { name: /Continue/ }).click();
+  assert.equal(player('Trainer').tutorial, 1);
+  checks.push('Three intro panels, starter selection, keyboard movement, guide dialogue and spawn lesson completion.');
+  await screenshot(hostPage, '03-exploration.png', 'Playable Willowbrook exploration after the first tutorial lesson.');
+
+  await hostPage.getByRole('button', { name: 'Open game menu' }).click();
+  await hostPage.getByRole('button', { name: 'Trainer profile' }).click();
+  await hostPage.getByRole('button', { name: 'Leave world', exact: true }).click();
+  await expect(hostPage.getByRole('navigation', {name:'Title menu'}).getByRole('button')).toHaveCount(2);
+  const consentRecord = app.store.meta('hostConsent');
+  app.generator.verified=false;app.generator.status.state='disconnected';
+  const sessionChecks:string[]=[];hostPage.on('request',request=>{if(request.url().endsWith('/api/host/session-check'))sessionChecks.push(request.url());});
+  await hostPage.reload();await expect.poll(()=>app.generator.verified).toBe(true);assert.equal(sessionChecks.length,1);
+  await hostPage.getByRole('button', {name:'Single player',exact:true}).click();
+  await expect(hostPage.getByRole('button', {name:'Open game menu'})).toBeVisible();
+  assert.equal(app.store.players().length,1);
+  assert.equal(app.store.meta('hostConsent'),consentRecord);
+  assert.equal(player('Trainer').party[0].species,'bulbasaur');
+  checks.push('A returning player gets one automatic saved-session check and resumes the same trainer without clicking Connect again or repeating consent.');
+
+  await hostPage.getByRole('button', {name:'Open game menu'}).click();
+  await hostPage.getByRole('button', {name:'SESSION',exact:true}).click();
+  await hostPage.getByRole('button', {name:'Enable multiplayer',exact:true}).click();
+  await expect.poll(()=>app.store.meta('sessionMode')).toBe('multiplayer');
+  await expect(hostPage.getByRole('textbox', {name:'Session address'})).toHaveValue(/^http/);
+  await screenshot(hostPage, '08-session-sharing.png', 'The host enables multiplayer on the same save and shares a session IP/URL. Guests need no Codex or invitation code.');
+  await hostPage.getByRole('button', {name:'Close',exact:true}).click();
+
+  const guestPage = await guestContext.newPage(); observe(guestPage);
+  await guestPage.goto('http://127.0.0.1:'+app.port);
+  await guestPage.getByRole('button', {name:'Single player',exact:true}).click();
+  await expect(guestPage.getByRole('alert')).toContainText('your computer');
+  await guestPage.getByRole('button', {name:'Dismiss error'}).click();
+  await guestPage.getByRole('button', {name:'Multiplayer',exact:true}).click();
+  await guestPage.getByRole('button', {name:'Join session',exact:true}).click();
+  await guestPage.getByRole('textbox', {name:'Server address',exact:true}).fill('127.0.0.1');
+  await guestPage.getByText('Choose a trainer nickname', {exact:true}).click();
+  await guestPage.getByLabel('Trainer nickname (optional)').fill('Rowan');
+  await guestPage.getByRole('button', {name:'Join session',exact:true}).click();
+  await introAndStarter(guestPage, 'Rowan', 'Squirtle');
+  const guestGame=new BrowserGame(guestPage,()=>player('Rowan'),id=>app.store.region(id));
+  const guestStep=Object.values(DIRECTIONS).map(([dx,dy])=>({x:player('Rowan').x+dx,y:player('Rowan').y+dy})).find(point=>guestGame.pathTo(point)?.length===1);assert.ok(guestStep);await guestGame.goTo(guestStep);
+  await expect(hostPage.locator('.world-window-top')).toContainText('2 trainers nearby');
+  await expect(guestPage.locator('.world-window-top')).toContainText('2 trainers nearby');
+  assert.equal(player('Trainer').regionId, player('Rowan').regionId);
+  await screenshot(hostPage, '04-multiplayer.png', 'Two independent browser clients share Willowbrook; both trainers are rendered on the authoritative server map.');
+  checks.push('Host can enable sharing on the current save; guest joins by server address and optional nickname, without Codex or an invitation. Both clients render one shared region.');
+
+  await hostGame.travel('north','0,-1');
+  assert.equal(player('Trainer').lessonRegion, '0,-1');
+  await hostGame.practice();
+  await expect(hostPage.getByRole('button', { name: 'FIGHT', exact: true })).toBeEnabled();
+  await screenshot(hostPage, '05-battle.png', 'Training battle reached through exploration and guide interaction in the northern adjacent map.');
+  await hostGame.winBattle();
+  assert.equal(player('Trainer').tutorial, 2);
+  checks.push('Exit transition assigns the next lesson; a real UI battle wins and advances tutorial progress.');
+  await noOverflow(hostPage);
+  await guestPage.reload();
+  await expect(guestPage.getByRole('navigation', {name:'Title menu'}).getByRole('button')).toHaveCount(2);
+  await guestPage.getByRole('button', {name:'Multiplayer',exact:true}).click();
+  await guestPage.getByRole('button', {name:'Join session',exact:true}).click();
+  await guestPage.getByRole('textbox', {name:'Server address',exact:true}).fill('127.0.0.1:'+app.port);
+  const savedGuest = await guestPage.evaluate(()=>localStorage.getItem('infinite-pokemon-session-v1'));
+  outagePages.add(guestPage);
+  await guestPage.route('**/api/join',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Temporary outage. Please try again.'})}));
+  await guestPage.getByRole('button', {name:'Join session',exact:true}).click();
+  await expect(guestPage.getByRole('alert')).toContainText('Temporary outage');
+  assert.equal(await guestPage.evaluate(()=>localStorage.getItem('infinite-pokemon-session-v1')),savedGuest);
+  await guestPage.unroute('**/api/join');
+  outagePages.delete(guestPage);
+  await guestPage.getByRole('button', {name:'Dismiss error'}).click();
+  await guestPage.getByRole('button', {name:'Join session',exact:true}).click();
+  await guestPage.getByRole('button', { name: 'Open game menu' }).click();
+  await guestPage.getByRole('button', { name: 'Trainer profile' }).click();
+  await expect(guestPage.locator('.trainer-profile')).toContainText('Rowan');
+  await guestPage.getByRole('button', { name: 'Close', exact: true }).click();
+  await guestPage.getByRole('button', { name: 'Open game menu' }).click();
+  await guestPage.getByRole('button', { name: 'Your team' }).click();
+  await expect(guestPage.locator('.companion-card')).toContainText('Squirtle');
+  await guestPage.getByRole('button', { name: 'Close', exact: true }).click();
+  assert.equal(app.store.players().filter(p=>p.name==='Rowan').length,1);
+  checks.push('An injected HTTP 503 during guest resume preserves the hidden save identity; normal retry resumes the same trainer.');
+  checks.push('Reload returns to the two-choice title; joining again transparently resumes the saved guest without any recovery, account or invitation controls.');
+
+  const mobileContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
+  const mobilePage = await mobileContext.newPage(); observe(mobilePage);
+  await mobilePage.goto(`http://127.0.0.1:${app.port}`);
+  await noOverflow(mobilePage);
+  await screenshot(mobilePage, '06-mobile-welcome.png', 'Mobile welcome screen at 390 × 844 CSS pixels.');
+  await mobilePage.getByRole('button', { name: 'Multiplayer', exact: true }).click();
+  await mobilePage.getByRole('button', { name: 'Join session', exact: true }).click();
+  await mobilePage.getByRole('textbox', {name:'Server address',exact:true}).fill('http://127.0.0.1:'+app.port);
+  await mobilePage.getByText('Choose a trainer nickname', { exact: true }).click();
+  await mobilePage.getByLabel('Trainer nickname (optional)').fill('Mira');
+
+  await mobilePage.getByRole('button', { name: 'Join session', exact: true }).click();
+  await introAndStarter(mobilePage, 'Mira', 'Charmander');
+  const mobileY=player('Mira').y;
+  await mobilePage.getByRole('button', { name: '↑', exact: true }).click();
+  await expect.poll(() => player('Mira').y).toBe(mobileY-1);
+  await noOverflow(mobilePage);
+  await screenshot(mobilePage, '07-mobile-exploration.png', 'Mobile exploration with functional touch direction controls and the current tutorial prompt in a classic dialogue box.');
+  await mobilePage.getByRole('button', { name: 'Open game menu' }).click();
+  await mobilePage.getByRole('button', { name: 'Your team' }).click();
+  await expect(mobilePage.locator('.companion-card')).toContainText('Charmander');
+  await noOverflow(mobilePage);
+  await mobilePage.getByRole('button', { name: 'Close', exact: true }).click();
+  checks.push('390-pixel mobile welcome, onboarding and exploration have no horizontal document overflow; touch movement works.');
+  await hostPage.getByRole('button', {name:'Open game menu'}).click();
+  await hostPage.getByRole('button', {name:'SESSION',exact:true}).click();
+  await hostPage.getByRole('button', {name:'Return to single player',exact:true}).click();
+  await expect(guestPage.getByRole('navigation', {name:'Title menu'}).getByRole('button')).toHaveCount(2);
+  await expect(guestPage.getByRole('alert')).toContainText('The host closed the multiplayer session. Your progress is saved.');
+  await expect(mobilePage.getByRole('navigation', {name:'Title menu'}).getByRole('button')).toHaveCount(2);
+  assert.equal(await guestPage.evaluate(()=>localStorage.getItem('infinite-pokemon-session-v1')),savedGuest);
+  await expect.poll(()=>app.world.online.size).toBe(1);
+  checks.push('Intentional host closure returns guests to the title with saved-progress feedback, preserves their save identity, and stops reconnecting.');
+  assert.deepEqual(errors, [], 'Browser console/page errors');
+  checks.push('No unexpected browser page or console errors; the deliberately injected HTTP 503 is recorded separately.');
+  console.log(JSON.stringify({ status: 'passed', checks, screenshots: screenshots.map(s => s.file) }, null, 2));
+} catch (e) {
+  errors.push(`test: ${(e as Error).stack}`);
+  console.error(e);
+  process.exitCode = 1;
+} finally {
+  writeFileSync(resolve('.test-data/verification/e2e.json'), JSON.stringify({ runId, status: process.exitCode ? 'failed' : 'passed', startedAt: started.toISOString(), completedAt: new Date().toISOString(), fixture: true, aiCalls: 0, seed: 'e2e-willow-2026-v1', browser: browser.version(), node: process.version, command: 'npm run test:e2e', dataDirectory: dataDir, checks, errors, expectedFaults, screenshots }, null, 2));
+  await browser.close();
+  await app.close();
+}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 260" role="img" aria-labelledby="title">
+  <title id="title">Infinite Pokémon</title>
+  <text x="400" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="34" letter-spacing="11" fill="#f8f8e8" stroke="#183060" stroke-width="7" paint-order="stroke">INFINITE</text>
+  <g transform="rotate(-4 400 146)">
+    <text x="403" y="193" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-style="italic" font-size="134" letter-spacing="-7" fill="#183060" stroke="#183060" stroke-width="18" paint-order="stroke">Pokémon</text>
+    <text x="400" y="184" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-style="italic" font-size="134" letter-spacing="-7" fill="#f8d840" stroke="#284888" stroke-width="12" paint-order="stroke">Pokémon</text>
+  </g>
+  <text x="400" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="19" letter-spacing="2" fill="#f8f8e8" stroke="#183060" stroke-width="4" paint-order="stroke">THE ADVENTURE NEVER ENDS.</text>
+</svg>

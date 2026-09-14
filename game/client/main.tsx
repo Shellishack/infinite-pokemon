@@ -1,0 +1,10 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import '@fontsource/press-start-2p/latin-400.css';
+import '@fontsource/vt323/latin-400.css';
+import App from './App';
+import './styles.css';
+import './desktop-fit.css';
+import {installDesktopFit} from './desktop-fit';
+installDesktopFit(document.getElementById('root')!);
+createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);

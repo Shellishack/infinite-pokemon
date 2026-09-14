@@ -1,0 +1,14 @@
+# Run Caddy on the same Linux host as the game, or in its host network namespace.
+# Replace this domain and configure DNS + inbound 80/443 before use.
+# Only the GUEST service is proxied. Never change the upstream to port 8788.
+tamer.example.com {
+    encode zstd gzip
+
+    # These routes belong exclusively to the local host console.
+    @host_only path /api/bootstrap /api/host /api/host/*
+    respond @host_only 404
+
+    # Caddy handles /play WebSocket upgrades and preserves the original Host.
+    # The game's same-origin checks require that original Host header.
+    reverse_proxy 127.0.0.1:8787
+}

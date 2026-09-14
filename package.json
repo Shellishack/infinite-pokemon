@@ -1,0 +1,60 @@
+{
+  "name": "infinite-pokemon",
+  "productName": "Infinite Pokémon",
+  "description": "A self-hosted, Pokémon-style adventure powered by an AI harness, with persistent worlds that grow as you explore.",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "dev": "tsx game/server/index.ts",
+    "build": "tsc --noEmit && vite build && tsc -p tsconfig.server.json",
+    "start": "node dist-server/game/server/index.js",
+    "desktop": "electron .",
+    "test": "tsx --test tests/*.test.ts",
+    "test:e2e": "tsx tests/e2e.ts",
+    "test:movement": "tsx tests/held-movement.ts",
+    "test:gameplay": "tsx tests/battle-interactions.ts",
+    "test:dialogue": "tsx tests/dialogue.ts",
+    "test:saves": "tsx tests/saves-e2e.ts",
+    "test:streaming": "tsx tests/streaming-e2e.ts",
+    "test:variety": "tsx tests/variety-e2e.ts",
+    "test:desktop": "tsx tests/desktop-smoke.ts",
+    "test:preview": "tsx tests/preview-e2e.ts",
+    "typecheck": "tsc --noEmit",
+    "desktop:fullscreen": "electron . --fullscreen",
+    "audio:compose": "tsx scripts/compose-soundtrack.ts",
+    "test:music": "tsx tests/music-e2e.ts",
+    "audio:sfx": "tsx scripts/compose-sfx.ts",
+    "audio:all": "npm run audio:compose && npm run audio:sfx",
+    "test:sfx": "tsx tests/sfx-e2e.ts",
+    "icon:build": "tsx scripts/build-icon.ts"
+  },
+  "dependencies": {
+    "@fontsource/press-start-2p": "^5.2.6",
+    "@fontsource/vt323": "^5.2.5",
+    "@openai/codex": "0.153.4",
+    "phaser": "3.90.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "ws": "^8.18.3",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^22.19.0",
+    "@types/pngjs": "^6.0.5",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@types/ws": "^8.18.1",
+    "@vitejs/plugin-react": "^5.1.1",
+    "electron": "^39.2.0",
+    "pngjs": "^7.0.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "source": "https://github.com/pret/pokefirered",
+  "sets": [
+    "building",
+    "pokemon_center"
+  ],
+  "columns": 32,
+  "count": 895,
+  "format": "Original indexed PNG/palette/16-bit metatile assembly",
+  "rights": "Original Pokémon artwork belongs to its respective owners."
+}

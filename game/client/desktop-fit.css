@@ -1,0 +1,15 @@
+html.desktop-game,html.desktop-game body{width:100%;height:100%;overflow:hidden}
+.desktop-game #root{position:absolute;transform-origin:top left}
+.desktop-game .console-shell{width:calc(100% - 32px);max-width:966px;margin:12px auto}
+.desktop-game .title-screen{aspect-ratio:auto;min-height:0;padding-bottom:38px}
+.desktop-game .console-caption{display:none}
+.desktop-game .game-topline{margin-bottom:12px}
+.desktop-game .game-controls{padding-top:14px}
+.desktop-game .control-legend{margin-top:10px}
+.desktop-game .preview-notice{margin-top:10px}
+.desktop-game .modal-scrim{padding:16px}
+.desktop-game .modal{max-height:calc(var(--desktop-height) - 40px);overflow-y:auto}
+.desktop-game .touch-controls{display:none}
+/* Phaser measures transformed bounds; let the viewport own CSS sizing so the
+   canvas is not scaled a second time by its FIT manager. */
+.desktop-game .game-canvas canvas{width:100%!important;height:100%!important;margin:0!important}

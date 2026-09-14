@@ -1,0 +1,15 @@
+# Generative NPCs and interiors
+
+Generation selects data; engine code owns gameplay rules. Both map and NPC jobs read branch-local snapshots. Map story schema v3 adds optional `npcBehaviors` and `interiors`, with defaults that preserve older content. The snapshot's `designContext` identifies actual actors, their home positions, room bounds and protected objects.
+
+NPC behavior policies support stationary, wander and patrol, with a Manhattan home radius1–3, interval2–8 seconds and up to6 patrol waypoints. The server selects cardinal steps and paths, reserves occupied cells, avoids players and interactable objects, protects door arrivals and checks that routes/services stay accessible. Actors pause within two tiles of players and during scene battles. Healers, merchants and breeders stay at their stations. The client interpolates the server's320ms movement trajectory. There is no model call for each step.
+
+Initial policies may be generated for any actor listed in a map's context. Live observation jobs currently update the outdoor guide's intention, dialogue, memory and optional policy through the dedicated NPC skill. Other actors receive initial behavior through map generation. Omitting a movement policy keeps the current behavior; an explicit stationary policy stops movement. Existing actors remain stationary unless assigned a policy.
+
+Positions live in the `npc_motion` table in each run's SQLite database, separate from immutable region geometry and generation source hashes. Checkpoints copy this state, and branches evolve independently. The client receives dynamic NPC coordinates and a stable background hash, so movement does not repaint the map on every step. Server and client use the same updated NPC hitboxes for movement and facing interactions.
+
+Interior designs choose room names,1–10 tables/counters/bookcases/beds with names and inspectable text, and up to4 passable rug rectangles. The compiler replaces furniture within x9–22/y5–18, retaining the room shell, service NPCs, terminal, spawn and exit links. It rejects unknown/duplicate rooms, out-of-bounds footprints, overlaps and inaccessible furniture/services/exits before publishing the map. These are generated layouts made with the existing tile assets; arbitrary walls, new building shells and external image-asset importing remain unsupported. Existing published rooms are not redesigned on entry.
+
+Code: `game/shared/world-design.ts`, `game/engine/interiors.ts`, `game/engine/npc-runtime.ts`, `game/server/harness.ts`. Skills: `skills/infinite-pokemon-npc/SKILL.md` and `skills/infinite-pokemon-interior/SKILL.md`; the region skill links them for map proposals.
+
+Tests cover valid/invalid interiors, NPC hitboxes, patrols, proximity pauses, static overrides, persistence and checkpoint isolation, and the actual harness payload/skill path. `npx tsx tests/generative-scenes-e2e.ts` renders a fixture-generated room and moving NPC, inspects furniture, heals and exits through the door. These tests make no provider calls.

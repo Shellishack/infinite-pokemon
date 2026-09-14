@@ -1,0 +1,126 @@
+{
+  "credit": "Original compositions and synthesized recordings created for Infinite Pokémon. No third-party samples.",
+  "sampleRate": 22050,
+  "tracks": [
+    {
+      "id": "title",
+      "title": "A Map Without an Edge",
+      "bpm": 112,
+      "durationSeconds": 17.142857142857142,
+      "loop": true,
+      "peak": 0.78,
+      "rms": 0.18116808582562957,
+      "file": "title.wav"
+    },
+    {
+      "id": "exploration",
+      "title": "Footsteps Beyond the Valley",
+      "bpm": 120,
+      "durationSeconds": 16,
+      "loop": true,
+      "peak": 0.78,
+      "rms": 0.17868965664164804,
+      "file": "exploration.wav"
+    },
+    {
+      "id": "interior",
+      "title": "Lanterns and Linen",
+      "bpm": 84,
+      "durationSeconds": 22.857142857142858,
+      "loop": true,
+      "peak": 0.78,
+      "rms": 0.20010126570259143,
+      "file": "interior.wav"
+    },
+    {
+      "id": "battle",
+      "title": "Sparks at the Crossroads",
+      "bpm": 144,
+      "durationSeconds": 13.333333333333334,
+      "loop": true,
+      "peak": 0.78,
+      "rms": 0.19137293010300185,
+      "file": "battle.wav"
+    },
+    {
+      "id": "victory",
+      "title": "A New Page",
+      "bpm": 132,
+      "durationSeconds": 7.272743764172335,
+      "loop": false,
+      "peak": 0.78,
+      "rms": 0.17840363678235024,
+      "file": "victory.wav"
+    },
+    {
+      "id": "town",
+      "title": "Willowbrook Morning",
+      "bpm": 108,
+      "durationSeconds": 17.77777777777778,
+      "loop": true,
+      "peak": 0.78,
+      "rms": 0.1719243529016392,
+      "file": "town.wav"
+    },
+    {
+      "id": "forest",
+      "title": "Where the Ferns Whisper",
+      "bpm": 96,
+      "durationSeconds": 20,
+      "loop": true,
+      "peak": 0.78,
+      "rms": 0.20873188697683612,
+      "file": "forest.wav"
+    },
+    {
+      "id": "coast",
+      "title": "Saltwind Boardwalk",
+      "bpm": 116,
+      "durationSeconds": 16.55174603174603,
+      "loop": true,
+      "peak": 0.78,
+      "rms": 0.1824020290722358,
+      "file": "coast.wav"
+    },
+    {
+      "id": "ruins",
+      "title": "Echoes in the Waystone",
+      "bpm": 76,
+      "durationSeconds": 25.263174603174605,
+      "loop": true,
+      "peak": 0.78,
+      "rms": 0.19907301937296856,
+      "file": "ruins.wav"
+    },
+    {
+      "id": "shop",
+      "title": "Coins and Curiosities",
+      "bpm": 126,
+      "durationSeconds": 15.238095238095237,
+      "loop": true,
+      "peak": 0.78,
+      "rms": 0.18176240205281674,
+      "file": "shop.wav"
+    },
+    {
+      "id": "trainer-battle",
+      "title": "A Rival on the Road",
+      "bpm": 152,
+      "durationSeconds": 12.63156462585034,
+      "loop": true,
+      "peak": 0.78,
+      "rms": 0.18412443027181846,
+      "file": "trainer-battle.wav"
+    },
+    {
+      "id": "guardian-battle",
+      "title": "The Valley Stands Together",
+      "bpm": 138,
+      "durationSeconds": 13.913061224489796,
+      "loop": true,
+      "peak": 0.78,
+      "rms": 0.1901606290832,
+      "file": "guardian-battle.wav"
+    }
+  ]
+}

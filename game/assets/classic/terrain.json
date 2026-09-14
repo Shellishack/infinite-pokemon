@@ -1,0 +1,267 @@
+{
+  "image": "/classic/terrain.png",
+  "tileWidth": 16,
+  "tileHeight": 16,
+  "columns": 32,
+  "count": 729,
+  "primaryTileCount": 640,
+  "primaryMetatileCount": 640,
+  "named": {
+    "grass": 17,
+    "grassAlt": 8,
+    "path": 662,
+    "sandyPath": 188,
+    "tallGrass": 10,
+    "flower": 4,
+    "bush": 5,
+    "water": 299,
+    "sign": 2,
+    "woodenSign": 3,
+    "fence": 644,
+    "mailbox": 685,
+    "pondTopLeft": 416,
+    "pondTop": 417,
+    "pondTopRight": 418,
+    "pondLeft": 424,
+    "pondCenter": 425,
+    "pondRight": 426,
+    "pondBottomLeft": 432,
+    "pondBottom": 433,
+    "pondBottomRight": 434
+  },
+  "blocks": {
+    "tree": [
+      [
+        14,
+        15
+      ],
+      [
+        28,
+        29
+      ],
+      [
+        36,
+        37
+      ]
+    ],
+    "house": [
+      [
+        641,
+        642,
+        642,
+        642,
+        643
+      ],
+      [
+        649,
+        650,
+        650,
+        650,
+        651
+      ],
+      [
+        657,
+        659,
+        658,
+        658,
+        660
+      ],
+      [
+        664,
+        665,
+        666,
+        667,
+        668
+      ],
+      [
+        672,
+        675,
+        674,
+        673,
+        676
+      ]
+    ],
+    "lab": [
+      [
+        680,
+        681,
+        681,
+        681,
+        681,
+        701,
+        693
+      ],
+      [
+        688,
+        689,
+        689,
+        689,
+        689,
+        691,
+        692
+      ],
+      [
+        696,
+        697,
+        697,
+        697,
+        697,
+        699,
+        700
+      ],
+      [
+        704,
+        705,
+        720,
+        706,
+        707,
+        708,
+        709
+      ],
+      [
+        712,
+        713,
+        728,
+        684,
+        715,
+        716,
+        717
+      ]
+    ],
+    "mailbox": [
+      [
+        677
+      ],
+      [
+        685
+      ]
+    ],
+    "fence": [
+      [
+        644,
+        644,
+        644,
+        644
+      ]
+    ],
+    "pond": [
+      [
+        416,
+        417,
+        418
+      ],
+      [
+        424,
+        425,
+        426
+      ],
+      [
+        432,
+        433,
+        434
+      ]
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/pret/pokefirered",
+    "branch": "master",
+    "recordedRevision": "c75f352304d529f6ba92d4f74b9cf8b5c3810788",
+    "paths": [
+      "data/tilesets/primary/general",
+      "data/tilesets/secondary/pallet_town"
+    ],
+    "formatDefinition": "include/fieldmap.h",
+    "rights": "Original Pokemon FireRed game artwork; no permissive artwork license is asserted. Copyright remains with its respective owners."
+  },
+  "decode": {
+    "entriesPerMetatile": 8,
+    "tileIndexBits": "0-9",
+    "horizontalFlipBit": 10,
+    "verticalFlipBit": 11,
+    "paletteBits": "12-15",
+    "compositing": "Four lower 8x8 quadrants followed by four upper quadrants; palette index 0 transparent.",
+    "unusedReferenceWarnings": []
+  },
+  "files": [
+    {
+      "path": "source-terrain/fieldmap.h",
+      "sha256": "e7d93120d2695043c7d75067f3c768344622c198503b0671d47292d6aa708a43"
+    },
+    {
+      "path": "source-terrain/general/metatiles.bin",
+      "sha256": "8d950c1a1f151f5e1bded1ecee165b815c3a4d62b69a4a9cec4f676283f9041e"
+    },
+    {
+      "path": "source-terrain/general/palettes/00.pal",
+      "sha256": "757529e794c7fb9c333b1c2ef83704f6b03bb0fe756443b80025b2bc55dbe7f0"
+    },
+    {
+      "path": "source-terrain/general/palettes/01.pal",
+      "sha256": "baec95e65952c79e6ceb9cf8306995379982dc9253e67797b350556e1db83bfb"
+    },
+    {
+      "path": "source-terrain/general/palettes/02.pal",
+      "sha256": "ea0310019345ea29e2196c4326182e32cbddf0e5fc2c4d010e8c40794c78852b"
+    },
+    {
+      "path": "source-terrain/general/palettes/03.pal",
+      "sha256": "117156779971950f6693bbefa2e92c373662209f2e39e4716f1e37a4f72ba022"
+    },
+    {
+      "path": "source-terrain/general/palettes/04.pal",
+      "sha256": "7fed8601788c83852288c2395afd84a2c9ca6717c1eb38b762ad8ae7a9d61c5d"
+    },
+    {
+      "path": "source-terrain/general/palettes/05.pal",
+      "sha256": "f8497b9b541ebe7ba0a80b0ac865135410d9cf6324f13949f3285c70b1119e07"
+    },
+    {
+      "path": "source-terrain/general/palettes/06.pal",
+      "sha256": "4d2d0cfdc068acb9bc2adc9d4d762bcee527fd0cf045c30728632e15b0590582"
+    },
+    {
+      "path": "source-terrain/general/tiles.png",
+      "sha256": "9ff889d1b9da5383a0cd0c85ac7b791812867804f3a38566b46172087419e0b9"
+    },
+    {
+      "path": "source-terrain/layouts.json",
+      "sha256": "1e8fdf737b31d269d0b918d4ed88bec8c2701bc7b1cbae2b2e3938bdea3de394"
+    },
+    {
+      "path": "source-terrain/pallet_town/map.bin",
+      "sha256": "b709c6d47d6006ff6402026496a9d0d9caab19a4515b02517eaf049c5f7bf2e0"
+    },
+    {
+      "path": "source-terrain/pallet_town/metatiles.bin",
+      "sha256": "3b7ba7f75fd5d750413fc252519569a9f98fac586d87f62066bdf1e3edf35ca2"
+    },
+    {
+      "path": "source-terrain/pallet_town/palettes/07.pal",
+      "sha256": "a47bca4043b26b45e2e06f38bd87f2c611c81629a65dc46e7144273143d3d5b2"
+    },
+    {
+      "path": "source-terrain/pallet_town/palettes/08.pal",
+      "sha256": "14c4f6f561b62186b212917e7e922e12ddcc2eae3cca047b53c3354220669997"
+    },
+    {
+      "path": "source-terrain/pallet_town/palettes/09.pal",
+      "sha256": "18fa76a58a43b9968fd1b506a6a5b72b39a1093d1cb8b7479115e2f3bcd514c9"
+    },
+    {
+      "path": "source-terrain/pallet_town/palettes/10.pal",
+      "sha256": "24abe115664ebcb82c3651b316d2496999c0ec99690dcb956ccee2afc2f030e9"
+    },
+    {
+      "path": "source-terrain/pallet_town/palettes/11.pal",
+      "sha256": "9a4bea40b1915f05d12a5867c1d9c65d72a876f23931d7aa95f035eddbb04c5f"
+    },
+    {
+      "path": "source-terrain/pallet_town/palettes/12.pal",
+      "sha256": "1ad9341bbc8ee6284a665f18d2bd535637cffdc2c0a2e47bd2a7d9253af32ba6"
+    },
+    {
+      "path": "source-terrain/pallet_town/tiles.png",
+      "sha256": "321a23f388126175b34b85cf46c2d8f943daab5ee4d0916129c345b99b9108d2"
+    }
+  ]
+}

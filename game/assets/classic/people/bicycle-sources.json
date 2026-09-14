@@ -1,0 +1,19 @@
+{
+  "retrievedAt": "2026-09-09T23:49:03.206Z",
+  "sources": [
+    {
+      "file": "red_bike.png",
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/master/graphics/object_events/pics/people/red_bike.png",
+      "sha256": "a5aef798abd0ef0a5c9734067bb9e01224485a60b1427c4b85a3c7c22cdbd31f",
+      "width": 288,
+      "height": 32
+    },
+    {
+      "file": "green_bike.png",
+      "url": "https://raw.githubusercontent.com/pret/pokefirered/master/graphics/object_events/pics/people/green_bike.png",
+      "sha256": "84e4ea94fd1d584595cc6f38dd0b7fd84b0736429fd404874c588337f6aa1b9b",
+      "width": 288,
+      "height": 32
+    }
+  ]
+}

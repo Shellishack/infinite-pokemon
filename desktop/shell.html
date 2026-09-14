@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; frame-src http: https:;">
+  <title>Infinite Pokémon</title>
+  <link rel="stylesheet" href="shell.css">
+  <script src="shell.js" defer></script>
+</head>
+<body>
+  <header class="titlebar">
+    <div class="brand"><img class="desktop-brand-icon" src="../game/assets/branding/app-icon.png" width="26" height="26" alt=""/><span>Infinite Pokémon</span><span class="edition">Adventure console</span></div>
+    <nav aria-label="Window controls"><button data-control="fullscreen" aria-label="Enter fullscreen" title="Fullscreen (F11)"><span class="fullscreen-icon" aria-hidden="true">⛶</span></button><button data-control="minimize" aria-label="Minimize window" title="Minimize"><span class="minimize-icon"></span></button><button data-control="maximize" aria-label="Maximize window" title="Maximize"><span class="maximize-icon"></span></button><button data-control="close" aria-label="Close game" title="Close game"><span class="close-icon">×</span></button></nav>
+  </header>
+  <button class="exit-fullscreen" data-control="fullscreen" aria-label="Exit fullscreen" title="Exit fullscreen (F11)">Exit fullscreen <span>F11</span></button>
+  <main class="bezel">
+    <div class="screen">
+      <iframe id="game" title="Infinite Pokémon game" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-downloads" allow="fullscreen; autoplay" hidden></iframe>
+      <section class="boot" aria-label="Game startup">
+        <h1 class="boot-wordmark"><img class="boot-logo" src="../game/assets/branding/infinite-pokemon-logo.svg" alt="Infinite Pokémon" width="800" height="260"></h1>
+        <p class="motto">The adventure never ends.</p>
+        <div class="boot-status"><span class="boot-led" aria-hidden="true"></span><p id="status" role="status">Waking up your adventure…</p></div>
+        <button id="retry" hidden>Try again</button>
+        <p class="boot-footnote">Your next adventure starts here.</p>
+      </section>
+    </div>
+  </main>
+  <footer><span class="power"><i aria-hidden="true"></i><span id="power-label">Starting up</span></span><span class="footer-motto">The adventure never ends.</span><span class="speaker" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></footer>
+</body>
+</html>

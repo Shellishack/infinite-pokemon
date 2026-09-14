@@ -1,0 +1,138 @@
+{
+  "credit": "Original synthesized effects for Infinite Pokémon; no third-party samples.",
+  "sampleRate": 22050,
+  "effects": [
+    {
+      "id": "select",
+      "file": "select.wav",
+      "durationSeconds": 0.07501133786848073,
+      "peak": 0.22
+    },
+    {
+      "id": "menu-open",
+      "file": "menu-open.wav",
+      "durationSeconds": 0.19877551020408163,
+      "peak": 0.25
+    },
+    {
+      "id": "menu-close",
+      "file": "menu-close.wav",
+      "durationSeconds": 0.18253968253968253,
+      "peak": 0.23
+    },
+    {
+      "id": "footstep",
+      "file": "footstep.wav",
+      "durationSeconds": 0.06503401360544217,
+      "peak": 0.09
+    },
+    {
+      "id": "bump",
+      "file": "bump.wav",
+      "durationSeconds": 0.1,
+      "peak": 0.18
+    },
+    {
+      "id": "door",
+      "file": "door.wav",
+      "durationSeconds": 0.2700226757369614,
+      "peak": 0.3
+    },
+    {
+      "id": "travel",
+      "file": "travel.wav",
+      "durationSeconds": 0.36,
+      "peak": 0.3
+    },
+    {
+      "id": "interact",
+      "file": "interact.wav",
+      "durationSeconds": 0.17750566893424036,
+      "peak": 0.24
+    },
+    {
+      "id": "encounter",
+      "file": "encounter.wav",
+      "durationSeconds": 0.37002267573696146,
+      "peak": 0.42
+    },
+    {
+      "id": "attack",
+      "file": "attack.wav",
+      "durationSeconds": 0.16,
+      "peak": 0.35
+    },
+    {
+      "id": "hit",
+      "file": "hit.wav",
+      "durationSeconds": 0.12,
+      "peak": 0.36
+    },
+    {
+      "id": "heal",
+      "file": "heal.wav",
+      "durationSeconds": 0.8950113378684807,
+      "peak": 0.4
+    },
+    {
+      "id": "pickup",
+      "file": "pickup.wav",
+      "durationSeconds": 0.24752834467120183,
+      "peak": 0.3
+    },
+    {
+      "id": "purchase",
+      "file": "purchase.wav",
+      "durationSeconds": 0.29628117913832197,
+      "peak": 0.3
+    },
+    {
+      "id": "save",
+      "file": "save.wav",
+      "durationSeconds": 0.5725170068027211,
+      "peak": 0.38
+    },
+    {
+      "id": "capture-throw",
+      "file": "capture-throw.wav",
+      "durationSeconds": 0.3000453514739229,
+      "peak": 0.3
+    },
+    {
+      "id": "capture-success",
+      "file": "capture-success.wav",
+      "durationSeconds": 0.5450340136054421,
+      "peak": 0.4
+    },
+    {
+      "id": "level-up",
+      "file": "level-up.wav",
+      "durationSeconds": 0.5825396825396826,
+      "peak": 0.42
+    },
+    {
+      "id": "hatch",
+      "file": "hatch.wav",
+      "durationSeconds": 0.8825396825396825,
+      "peak": 0.4
+    },
+    {
+      "id": "escape",
+      "file": "escape.wav",
+      "durationSeconds": 0.3300226757369614,
+      "peak": 0.3
+    },
+    {
+      "id": "error",
+      "file": "error.wav",
+      "durationSeconds": 0.2700226757369614,
+      "peak": 0.24
+    },
+    {
+      "id": "send-out",
+      "file": "send-out.wav",
+      "durationSeconds": 0.2750113378684807,
+      "peak": 0.34
+    }
+  ]
+}
