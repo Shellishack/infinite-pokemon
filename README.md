@@ -1,6 +1,6 @@
 # Infinite Pokémon
 
-**English** | [简体中文](README.zh-CN.md) · [GitHub repository](https://github.com/Shellishack/infinite-pokemon)
+**English** | [简体中文](README.zh-CN.md) · [GitHub repository](https://github.com/Shellishack/infinite-pokemon) · [Technical report v0.4 (PDF, provisional)](https://github.com/Shellishack/infinite-pokemon/releases/download/report-v0.4/Infinite-Pokemon-Technical-Report-v0.4.pdf)
 
 > **Educational and non-commercial use only.** This is an experimental fan project, not an official Pokémon product. It is not affiliated with or endorsed by Nintendo, Creatures, GAME FREAK, or The Pokémon Company.
 >
