@@ -1,5 +1,7 @@
 # Infinite Pokémon
 
+**English** | [简体中文](README.zh-CN.md) · [GitHub repository](https://github.com/Shellishack/infinite-pokemon)
+
 > **Educational and non-commercial use only.** This is an experimental fan project, not an official Pokémon product. It is not affiliated with or endorsed by Nintendo, Creatures, GAME FREAK, or The Pokémon Company.
 >
 > **Generated with Codex.** This repository was generated using OpenAI Codex under human direction. Third-party dependencies and reference assets were incorporated into the project; they were not created by Codex and retain their respective ownership and license terms. See [DISCLAIMER.md](DISCLAIMER.md) and [asset credits](game/assets/classic/CREDITS.md).
@@ -61,7 +63,7 @@ Open the local game at [http://127.0.0.1:8788](http://127.0.0.1:8788):
 
 1. Select **Single player**.
 2. If Codex is not already verified, choose **Connect to Codex**. This authorizes the displayed token-use notice, verifies the harness, and enters automatically. Finish provider sign-in if prompted.
-3. The game enters automatically. Verification reads a local nonce through the supplied skill. Once it succeeds, the starting map is playable and nearby maps prepare in the background according to your generation depth (1 by default). Unfinished destinations show a waiting screen.
+3. The game enters automatically. Verification sends a short nonce confirmation without loading a skill or reading files. Once it succeeds, the starting map is playable and nearby maps prepare in the background according to your generation depth (1 by default). Unfinished destinations show a waiting screen.
 
 A still-valid Codex connection is reused. After restarting an approved run, the game automatically checks the local sign-in and sends a tiny confirmation prompt; you do not need to click Connect again. A failed check returns to the Connect action. There is no separate account-creation or manual map-preparation step. The confirmation asks only for a nonce and “ok”, with no skill loading or file reads. Provider startup and response time still apply. Trainer nickname, generation batch size, map generation depth, and saves appear under the collapsed **Optional settings** section.
 
@@ -173,7 +175,7 @@ The app preserves existing Electron profiles, browser session identifiers, audio
 | `NODE_BINARY` | Node executable used by Electron |
 | `INFINITE_MAP_TIMEOUT_MS` | Per-map generation deadline; default `180000`, maximum `600000` |
 
-SQLite `world.sqlite` stores maps, players, events, NPC memory, generation jobs, command receipts, and metadata. `context/snapshots/` contains immutable JSON inputs with manifests; `generation/` contains model-output/usage logs. Gameplay facts come from the server, not client-authored save files.
+SQLite `world.sqlite` stores maps, players, events, NPC memory, generation jobs, command receipts, and metadata. `context/snapshots/` contains immutable JSON inputs with manifests; `generated-content/` contains new model-output/usage logs; older `generation/` logs remain in place. Gameplay facts come from the server, not client-authored save files.
 
 Use **START → SESSION → World settings → Back up world** for an online SQLite backup in `backups/`. This contains database state, not every context/log file or private Codex credential. For a full archive, stop the server cleanly and copy the entire data directory. Restore while stopped into a separate directory, retain the original, then select the restored directory with `INFINITE_DATA_DIR` and reconnect. Never replace a live database or separate it from active WAL files.
 
