@@ -59,6 +59,8 @@ This is an experimental implementation, not a finished release. Terrain comes fr
 
 Install Node.js **22.13 or newer**, then run these commands from this repository:
 
+Node 22.13–22.15 is supported: database backups fall back to SQLite `VACUUM INTO` when the newer online backup API is unavailable. The fallback briefly blocks the server while copying; newer Node versions use the asynchronous online backup API. Desktop startup failures display the server's actual error; port advice is shown only for an address-in-use error.
+
 Docker is optional. The normal local workflow is just Node.js and the commands below.
 
 ```sh

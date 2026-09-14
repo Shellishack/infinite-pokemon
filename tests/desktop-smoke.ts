@@ -157,6 +157,8 @@ try {
     await expect(retryPage.getByRole('region',{name:'Game startup'})).toBeVisible();
     await retryPage.screenshot({path:resolve('.test-data/verification/desktop-startup.png')});
     await expect(retryPage.getByRole('button',{name:'Try again'})).toBeVisible({timeout:10000});
+    await expect(retryPage.getByRole('region',{name:'Game startup'})).toContainText('EADDRINUSE');
+    await expect(retryPage.getByRole('region',{name:'Game startup'})).toContainText('Choose another PORT');
     await new Promise<void>((done,reject)=>blocker.close(error=>error?reject(error):done()));
     await retryPage.getByRole('button',{name:'Try again'}).click();
     await expect(retryPage.frameLocator('#game').getByRole('button',{name:'Single player'})).toBeVisible({timeout:10000});

@@ -1,6 +1,7 @@
 import {designContext} from './design-context.js';
-import { DatabaseSync, backup } from 'node:sqlite';
-import { mkdirSync, writeFileSync, renameSync, existsSync } from 'node:fs';
+import { DatabaseSync } from 'node:sqlite';
+import * as sqlite from 'node:sqlite';
+import { mkdirSync, writeFileSync, renameSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomUUID, createHash } from 'node:crypto';
 import {creatureInfo,creatureKey,type Player,type Region,type WorldEvent,type NpcMemory} from '../shared/model.js';
@@ -79,6 +80,13 @@ export class Store {
     const pointer=join(this.root,'context','current.json'); writeFileSync(pointer+'.tmp',JSON.stringify({snapshotId:id,path:final})); renameSync(pointer+'.tmp',pointer);
     return {id,seq,runId:lineage.runId,path:join(final,'manifest.json'),contextPath:join(final,'context.json'),choice:this.meta('choice'),dependencies,npcRevision:this.npc(target.id).revision};
   }
-  async backupTo(path:string) { await backup(this.db,path); }
+  async backupTo(path:string) {
+    if(typeof sqlite.backup==='function'){await sqlite.backup(this.db,path);return;}
+    // Node 22.13–22.15 has DatabaseSync but not the online backup export.
+    // VACUUM INTO includes committed WAL state; stage before replacing a backup.
+    const stage=path+'.'+randomUUID()+'.tmp';
+    try{this.db.prepare('VACUUM INTO ?').run(stage);renameSync(stage,path);}
+    finally{rmSync(stage,{force:true});}
+  }
   close() { this.db.close(); }
 }

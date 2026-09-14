@@ -56,6 +56,8 @@ Infinite Pokémon 探索一个想法：游戏世界能否随着你的游玩不�
 
 需要 **Node.js 22.13 或更新版本**。进入仓库后运行：
 
+支持 Node 22.13–22.15：缺少新版在线备份 API 时，会使用 SQLite 的 `VACUUM INTO` 创建备份。该兼容方式会在复制期间短暂阻塞服务端；较新的 Node 使用异步在线备份 API。桌面启动失败会显示服务端的实际错误，只有地址被占用时才提示端口冲突。
+
 ```sh
 git clone https://github.com/Shellishack/infinite-pokemon.git
 cd infinite-pokemon

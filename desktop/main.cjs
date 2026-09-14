@@ -4,6 +4,7 @@ const { createInterface } = require('node:readline');
 const { pathToFileURL } = require('node:url');
 const path = require('node:path');
 const fs = require('node:fs');
+const { serverFailure } = require('./server-diagnostics.cjs');
 // Reuse existing profiles so renaming the package cannot strand saved worlds.
 if (!process.argv.some(arg => arg === '--user-data-dir' || arg.startsWith('--user-data-dir='))) {
   const legacyProfile = path.join(app.getPath('appData'), 'infinite-pokemon');
@@ -37,16 +38,17 @@ async function startServer() {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     server = child;
-    let endpoint, failure;
-    child.stderr.on('data', () => {});
+    let endpoint, failure, stderr = '';
+    child.stderr.on('data', chunk => { stderr = (stderr + chunk.toString()).slice(-8192); });
     const lines = createInterface({ input: child.stdout });
     lines.on('line', line => {
       const match = /^Host console: (http:\/\/127\.0\.0\.1:\d+)$/.exec(line);
       if (match) endpoint = match[1];
     });
-    child.on('error', () => { failure = 'Could not launch the game server. Install Node.js 22.13 or newer, then retry.'; });
-    child.on('exit', () => {
-      failure ??= 'The game server stopped. Check that the configured ports are free, then retry.';
+    child.on('error', error => { failure = `Could not launch Node (${error.code || error.message}). Install Node.js 22.13 or newer, or set NODE_BINARY to its executable, then retry.`; });
+    // close follows stderr drainage; exit can precede the final error output.
+    child.on('close', (code, signal) => {
+      failure ??= serverFailure(stderr, code, signal);
       if (!quitting && server === child && !starting) publish({ phase: 'error', message: failure });
     });
     for (let i = 0; i < 100 && !quitting; i++) {
