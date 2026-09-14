@@ -1,0 +1,32 @@
+name: Windows Node compatibility
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  sqlite-startup:
+    name: Node ${{ matrix.node }} on Windows
+    runs-on: windows-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22.13.0', '22.14.0', '22.16.0']
+    env:
+      # These checks exercise the Node server, not the Electron browser.
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Verify server startup, backups, and desktop error messages
+        run: node --import tsx --test tests/sqlite-backup.test.ts tests/desktop-diagnostics.test.ts
