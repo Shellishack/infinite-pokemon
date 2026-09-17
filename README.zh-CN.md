@@ -12,6 +12,19 @@ npx skills add Shellishack/infinite-pokemon --skill infinite-pokemon
 
 安装技能本身不会启动软件。Skills CLI 需要仓库来源，单独的 `npx skills add infinite-pokemon` 不是受支持的全局别名。详见[入口技能](skills/infinite-pokemon/SKILL.md)。
 
+### 在哪里下载技能
+
+入口技能和三个生成技能已发布到以下平台：
+
+| 平台 | 快速启动技能 | 四个技能 |
+| --- | --- | --- |
+| **skills.sh** | [infinite-pokemon](https://skills.sh/shellishack/infinite-pokemon/infinite-pokemon) | [地图](https://skills.sh/shellishack/infinite-pokemon/infinite-pokemon-region) · [NPC](https://skills.sh/shellishack/infinite-pokemon/infinite-pokemon-npc) · [室内](https://skills.sh/shellishack/infinite-pokemon/infinite-pokemon-interior) |
+| **ClawHub** | [Infinite Pokémon Quick Start](https://clawhub.ai/shellishack/skills/infinite-pokemon) | [地图](https://clawhub.ai/shellishack/skills/infinite-pokemon-region) · [NPC](https://clawhub.ai/shellishack/skills/infinite-pokemon-npc) · [室内](https://clawhub.ai/shellishack/skills/infinite-pokemon-interior) |
+| **skills.re** | [infinite-pokemon](https://skills.re/skills/Shellishack/infinite-pokemon/infinite-pokemon) | [地图](https://skills.re/skills/Shellishack/infinite-pokemon/infinite-pokemon-region) · [NPC](https://skills.re/skills/Shellishack/infinite-pokemon/infinite-pokemon-npc) · [室内](https://skills.re/skills/Shellishack/infinite-pokemon/infinite-pokemon-interior) |
+| **GitHub** | [入口技能源码](skills/infinite-pokemon/SKILL.md) | [v0.2.0 ZIP 下载](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.2.0) |
+
+[SkillsMP](https://skillsmp.com/search?q=infinite-pokemon) 也已按其文档要求，通过 GitHub Topics 提交自动收录，但目前尚未出现公开条目，因此暂时不能作为下载入口。详情见[发布状态与许可说明](docs/SKILL-DISTRIBUTION.md)。
+
 > **仅供教育与非商业用途。** 本项目是实验性的爱好者作品，并非官方宝可梦产品，与 Nintendo、Creatures、GAME FREAK 或 The Pokémon Company 无关联，也未获得其背书。
 >
 > **由 Codex 生成。** 人类提供大致的想法，OpenAI Codex 据此生成项目代码、文档和开发工具。引入的第三方依赖与参考素材并非 Codex 原创，其所有权及许可条款仍然适用。详见[免责声明](DISCLAIMER.md)与[素材来源](game/assets/classic/CREDITS.md)。四个独立技能指令包获准采用 MIT-0，具体范围见下文。
