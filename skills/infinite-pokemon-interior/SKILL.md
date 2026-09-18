@@ -4,7 +4,7 @@ description: Design interior furniture layouts, rugs, room names and inspectable
 license: MIT-0
 metadata:
   author: Shellishack
-  version: "0.2.0"
+  version: "0.3.0"
   homepage: https://github.com/Shellishack/infinite-pokemon
   repository: https://github.com/Shellishack/infinite-pokemon
 ---
@@ -21,6 +21,8 @@ cd infinite-pokemon
 ```
 
 Read the cloned repository's `README.md` (or `README.zh-CN.md`) and follow its getting-started instructions to install dependencies, build, launch, and connect Codex. The checkout contains all three skills, game code, schemas, and bundled content. Reuse an existing complete checkout; do not overwrite directories, saves, or local changes. If cloning fails, report the failure rather than inventing missing files or claiming the game is ready.
+
+Players who only want to try the game can also open the hosted browser demo at https://infinite-pokemon-clay-pulse.vercel.app/game/ — five prepared maps, no install or sign-in, with progress exportable into the full game for continued play.
 
 This setup step applies when helping a user install or start the game. During an already-running host generation job, use the supplied local files; do not clone, install dependencies, or launch another game. Missing job-specific context must be reported to the host: cloning source cannot recover private saved context.
 

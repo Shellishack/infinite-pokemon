@@ -1,8 +1,8 @@
 # Infinite Pokémon setup and generation skills
 
-[Project repository](https://github.com/Shellishack/infinite-pokemon) · [Getting started](https://github.com/Shellishack/infinite-pokemon#readme) · [Issues](https://github.com/Shellishack/infinite-pokemon/issues)
+[Project repository](https://github.com/Shellishack/infinite-pokemon) · [Website and browser demo](https://infinite-pokemon-clay-pulse.vercel.app) · [Getting started](https://github.com/Shellishack/infinite-pokemon#readme) · [Issues](https://github.com/Shellishack/infinite-pokemon/issues)
 
-Source version 0.2.0. The entry skill guides an AI assistant through user-requested setup and launch. The three generation skills produce structured content proposals for the game host. No artwork, saves, credentials, or unpublished research is included in these bundles.
+Source version 0.3.0. The entry skill guides an AI assistant through user-requested setup and launch. The three generation skills produce structured content proposals for the game host. No artwork, saves, credentials, or unpublished research is included in these bundles.
 
 ## Quick start
 

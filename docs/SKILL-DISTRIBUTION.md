@@ -1,15 +1,15 @@
 # Skill distribution
 
-Publication links rechecked 17 September 2026. The entry skill and three generation skills are version 0.2.0.
+Publication links rechecked 19 September 2026. The entry skill and three generation skills are version 0.3.0, which adds the hosted website and browser demo to the skill instructions.
 
-[Repository](https://github.com/Shellishack/infinite-pokemon) · [Versioned ZIP bundles](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.2.0) · [Skill instructions and installation](../skills/README.md)
+[Repository](https://github.com/Shellishack/infinite-pokemon) · [Versioned ZIP bundles](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.3.0) · [Website and browser demo](https://infinite-pokemon-clay-pulse.vercel.app) · [Skill instructions and installation](../skills/README.md)
 
 | Destination | Verified status |
 | --- | --- |
-| GitHub release | Published: four instruction-only ZIP archives at v0.2.0 |
+| GitHub release | Published: four instruction-only ZIP archives at v0.3.0 |
 | skills.sh / Skills CLI | [Entry](https://skills.sh/shellishack/infinite-pokemon/infinite-pokemon), [region](https://skills.sh/shellishack/infinite-pokemon/infinite-pokemon-region), [NPC](https://skills.sh/shellishack/infinite-pokemon/infinite-pokemon-npc), and [interior](https://skills.sh/shellishack/infinite-pokemon/infinite-pokemon-interior) pages are public |
-| skills.re | [Entry](https://skills.re/skills/Shellishack/infinite-pokemon/infinite-pokemon), [region](https://skills.re/skills/Shellishack/infinite-pokemon/infinite-pokemon-region), [NPC](https://skills.re/skills/Shellishack/infinite-pokemon/infinite-pokemon-npc), and [interior](https://skills.re/skills/Shellishack/infinite-pokemon/infinite-pokemon-interior) are public at v0.2.0 |
-| ClawHub | [Entry](https://clawhub.ai/shellishack/skills/infinite-pokemon), [region](https://clawhub.ai/shellishack/skills/infinite-pokemon-region), [NPC](https://clawhub.ai/shellishack/skills/infinite-pokemon-npc), and [interior](https://clawhub.ai/shellishack/skills/infinite-pokemon-interior) pages are public at v0.2.0 |
+| skills.re | [Entry](https://skills.re/skills/Shellishack/infinite-pokemon/infinite-pokemon), [region](https://skills.re/skills/Shellishack/infinite-pokemon/infinite-pokemon-region), [NPC](https://skills.re/skills/Shellishack/infinite-pokemon/infinite-pokemon-npc), and [interior](https://skills.re/skills/Shellishack/infinite-pokemon/infinite-pokemon-interior) are public at v0.3.0 |
+| ClawHub | [Entry](https://clawhub.ai/shellishack/skills/infinite-pokemon), [region](https://clawhub.ai/shellishack/skills/infinite-pokemon-region), [NPC](https://clawhub.ai/shellishack/skills/infinite-pokemon-npc), and [interior](https://clawhub.ai/shellishack/skills/infinite-pokemon-interior) pages are public at v0.3.0 |
 | SkillsMP | [Search](https://skillsmp.com/search?q=infinite-pokemon): submitted through documented GitHub-topic indexing, but no listing was visible on 17 September 2026 |
 | Skills Directory / SkillPass | Require additional publisher sign-in; not submitted |
 

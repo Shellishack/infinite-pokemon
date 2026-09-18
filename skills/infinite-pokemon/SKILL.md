@@ -4,7 +4,7 @@ description: Set up and start Infinite Pokémon when a user asks to install, pla
 license: MIT-0
 metadata:
   author: Shellishack
-  version: "0.2.0"
+  version: "0.3.0"
   homepage: https://github.com/Shellishack/infinite-pokemon
   repository: https://github.com/Shellishack/infinite-pokemon
 ---
@@ -55,6 +55,8 @@ Use `npm run desktop:fullscreen` when the user requests fullscreen. Keep the lau
 
 If a desktop GUI is unavailable or the user prefers a browser, use `npm start` and open `http://127.0.0.1:8788`. Check the server's startup output and `/api/info` before reporting that it is ready. Electron chooses available ports by default; use its displayed address rather than assuming 8788. If another instance is already running, reuse it only after confirming it belongs to this game and the intended save directory. Do not kill unrelated processes to free ports.
 
+No-install option: open the hosted browser demo at https://infinite-pokemon-clay-pulse.vercel.app/game/ (site: https://infinite-pokemon-clay-pulse.vercel.app). It runs the five prepared tutorial maps entirely in the browser, autosaves locally, and can export progress as a portable save for import into the full game via the host-only import action in SAVES. The demo needs no Codex connection, account, or setup.
+
 Keep default save locations unless the user specifies one. Do not reset the game, delete databases, or start extra servers against the same data directory. Explain the actual checkout and launch mode in the completion message.
 
 ## 4. Enter the game
@@ -76,6 +78,7 @@ npx skills add Shellishack/infinite-pokemon --skill infinite-pokemon
 Then ask the AI: **“Use $infinite-pokemon to set up and start the game for me.”** The Skills CLI requires a repository source; the bare `npx skills add infinite-pokemon` is not a supported global alias.
 
 - [Repository and getting started](https://github.com/Shellishack/infinite-pokemon#readme)
+- [Website and browser demo](https://infinite-pokemon-clay-pulse.vercel.app)
 - [Chinese README](https://github.com/Shellishack/infinite-pokemon/blob/main/README.zh-CN.md)
 - [Generation skills](https://github.com/Shellishack/infinite-pokemon/tree/main/skills)
 - [Issues](https://github.com/Shellishack/infinite-pokemon/issues)
