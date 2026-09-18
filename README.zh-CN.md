@@ -1,6 +1,6 @@
 # Infinite Pokémon（无限宝可梦）
 
-[English](README.md) | **简体中文** · [GitHub 仓库](https://github.com/Shellishack/infinite-pokemon) · [技能下载](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.2.0) · [技术报告 v0.4（PDF，暂定稿）](docs/technical-report/Infinite-Pokemon-Technical-Report-v0.4.pdf)
+[English](README.md) | **简体中文** · [官网与浏览器试玩版](https://infinite-pokemon.vercel.app) · [Discord 社区](https://discord.gg/kKbY8xaVxG) · [GitHub 仓库](https://github.com/Shellishack/infinite-pokemon) · [技能下载](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.2.0) · [技术报告 v0.4（PDF，暂定稿）](docs/technical-report/Infinite-Pokemon-Technical-Report-v0.4.pdf)
 
 ## 让 AI 帮你开始游戏
 

@@ -56,7 +56,14 @@ async function startServer() {
       if (endpoint) {
         try {
           const response = await fetch(endpoint + '/api/info', { signal: AbortSignal.timeout(600) });
-          if (response.ok) { publish({ phase: 'loading', message: 'Opening the title screen…', url: endpoint }); return; }
+          if (response.ok) {
+            // The exported website serves the game client at /game/.
+            const info = await response.json().catch(() => ({}));
+            let url = (info.gameBase && info.gameBase !== '/') ? endpoint + info.gameBase : endpoint;
+            if (info.gameBase && info.gameBase !== '/') url += '?embed=1';
+            publish({ phase: 'loading', message: 'Opening the title screen…', url });
+            return;
+          }
         } catch {}
       }
       await new Promise(resolve => setTimeout(resolve, 150));

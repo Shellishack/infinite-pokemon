@@ -1,11 +1,9 @@
 import type {SfxCue} from '../shared/sfx.js';
 import {NpcRuntime} from './npc-runtime.js';
-import { randomUUID,createHash } from 'node:crypto';
-import {mkdirSync} from 'node:fs';
-import {join} from 'node:path';
+import {sha256Hex} from '../shared/sha256.js';
 import {ContentSystem} from './content.js';
 import {installServices} from './services.js';
-import type { Store } from '../server/store.js';
+import type { WorldStore } from './store.js';
 import { compileRegion, validateRegion } from './maps.js';
 import { WIDTH, HEIGHT, WALK_MS, creatureInfo, creatureKey, ATTACK_PP, DIRECTIONS, SPECIES, damage, hashSeed, random, regionId, TUTORIALS, type Player, type Region, type Creature, type Species, type Action, type GameState, type GenerationStatus, type Battle, type SceneObject, type MovementState, type Point, type Direction } from '../shared/model.js';
 import { getScene,sceneObjects,solidAt,objectInFront,objectContains,nearestFree } from '../shared/scene.js';
@@ -22,12 +20,12 @@ export class World {
   lastMove = new Map<string,number>();
   lastMoveSeq = new Map<string,number>();
   now:()=>number=Date.now;
-  constructor(public store:Store,public allowedRegions?:ReadonlySet<string>) {
+  constructor(public store:WorldStore,public allowedRegions?:ReadonlySet<string>) {
     this.actors=new NpcRuntime(store);this.content=new ContentSystem(store);
     const upgrades=store.regions().filter(region=>installServices(region.scenes??[]));
-    if(upgrades.length){const dir=join(store.root,'backups');mkdirSync(dir,{recursive:true});store.db.prepare('VACUUM INTO ?').run(join(dir,'pre-variety-'+Date.now()+'-'+randomUUID().slice(0,6)+'.sqlite'));for(const region of upgrades){region.hash=createHash('sha256').update(JSON.stringify({...region,hash:undefined})).digest('hex');store.saveRegion(region);}}
+    if(upgrades.length){store.backupDatabase?.('pre-variety');for(const region of upgrades){region.hash=sha256Hex(JSON.stringify({...region,hash:undefined}));store.saveRegion(region);}}
     for(const player of store.players()){this.content.initialize(player);if(upgrades.some(region=>region.id===player.regionId)&&solidAt(this.playerScene(player),player.x,player.y)){const position=this.safeArrival(this.playerScene(player),player);player.x=position.x;player.y=position.y;delete player.movement;}store.savePlayer(player);}
-    this.store.db.prepare("UPDATE jobs SET status='interrupted' WHERE status='running'").run();
+    this.store.markInterruptedJobs();
     for(const p of this.store.players())if(p.battle?.kind==='coop'&&!p.battle.finished){p.battle.finished=true;p.battle.log.push('The server restarted. Meet your friends at the Waystone to try again.');this.store.savePlayer(p);}
   }
   ensureRegion(gx:number,gy:number) { const id=regionId(gx,gy);if(this.allowedRegions&&!this.allowedRegions.has(id))throw new GameError('The tutorial preview ends here. Visit the prepared routes to finish your lessons, or connect Codex to continue beyond the valley.','PREVIEW_BOUNDARY');const existing=this.store.region(id);if(existing)return existing;if(this.allowedRegions)throw new GameError('A prepared tutorial map is missing.','PREVIEW_PACK_MISSING');const r=compileRegion(gx,gy,this.store.meta('seed')!);validateRegion(r);this.store.saveRegion(r);return r; }
@@ -36,7 +34,7 @@ export class World {
   neighbors(r:Region) {const result:Region[]=[];for(let distance=1;distance<=this.renderDepth();distance++)for(let dx=-distance;dx<=distance;dx++){const dy=distance-Math.abs(dx);for(const y of dy===0?[0]:[-dy,dy]){const id=regionId(r.gx+dx,r.gy+y);if(!this.allowedRegions||this.allowedRegions.has(id))result.push(this.ensureRegion(r.gx+dx,r.gy+y));}}return result;}
   createPlayer(name:string) {
     if(this.store.players().length>=64)throw new GameError('This world has reached its player limit.');
-    const token=randomUUID()+randomUUID(), id=randomUUID();
+    const token=crypto.randomUUID()+crypto.randomUUID(), id=crypto.randomUUID();
     const origin=this.ensureRegion(0,0),spawn=nearestFree(origin,origin.spawn??{x:16,y:14});
     const p:Player={id,name,color:hashSeed(id)%6,regionId:'0,0',...spawn,facing:'south',party:[],storage:[],active:0,balls:8,potions:4,coins:100,tutorial:0,tutorialFlags:[],lessonRegion:'0,0',introDone:false,visited:['0,0'],journal:[`Arrived in ${origin.name}. A new adventure begins.`],battle:null,choice:null,steps:0,collectedItems:[]};
     this.store.transaction(()=>{this.store.addPlayer(p,token);const r=this.ensureRegion(0,0);r.published=true;this.store.saveRegion(r);this.store.event(id,r.id,'arrival',`${name} began their journey in ${r.name}.`);});
@@ -259,7 +257,7 @@ export class World {
     const enemy=profile?this.content.make(profile.base,3,profile):this.makeCreature(species,kind==='trainer'?5:3);
     const trainer=this.facingObject(p),trainerId=kind==='trainer'?`${p.regionId}:${p.sceneId??'outdoor'}:${trainer?.id??'trainer'}`:undefined;
     if(kind==='trainer'){const traits=this.content.npcTraits(this.store.region(p.regionId)!,trainer?.id??'trainer');enemy.traits=[traits.temperament==='bold'?'bold':'gentle'];}
-    p.battle={id:randomUUID(),kind,enemy,trainerId,round:0,log:[`${kind==='trainer'?trainerName+' sent out':'A wild'} ${creatureInfo(enemy).name}${kind==='trainer'?'!':' appeared!'}`],won:false,finished:false,rewardGiven:false};
+    p.battle={id:crypto.randomUUID(),kind,enemy,trainerId,round:0,log:[`${kind==='trainer'?trainerName+' sent out':'A wild'} ${creatureInfo(enemy).name}${kind==='trainer'?'!':' appeared!'}`],won:false,finished:false,rewardGiven:false};
   }
   battleAction(p:Player,action:'attack'|'special'|'capture'|'run'|'close',result:ActionResult,ballId='poke-ball'){
     this.content.initialize(p);const b=p.battle;if(!b)throw new GameError('You are not in a battle.');
@@ -272,7 +270,7 @@ export class World {
       if(b.kind==='trainer')throw new GameError('You cannot catch another trainer’s Pokémon.');const ball=this.content.item(ballId);if(!ball||ball.effect!=='capture'||this.content.quantity(p,ballId)<1)throw new GameError('No capture item available. Visit a shop for supplies.');
       this.content.add(p,ballId,-1);b.log.push(`${p.name} threw a ${ball.name}!`);const weakened=b.enemy.hp<=b.enemy.maxHp*.6;
       if((p.tutorial===2&&weakened)||rng()<.25+(1-b.enemy.hp/b.enemy.maxHp)*.65+ball.power-(b.enemy.traits?.includes('elusive')?.08:0)){
-        const caught={...b.enemy,id:randomUUID(),hp:b.enemy.maxHp,pp:{attack:ATTACK_PP,special:creatureInfo(b.enemy).specialPp}}, stored=p.party.length>=6;if(!stored)p.party.push(caught);else p.storage.push(caught);
+        const caught={...b.enemy,id:crypto.randomUUID(),hp:b.enemy.maxHp,pp:{attack:ATTACK_PP,special:creatureInfo(b.enemy).specialPp}}, stored=p.party.length>=6;if(!stored)p.party.push(caught);else p.storage.push(caught);
         b.log.push(`Gotcha! ${creatureInfo(caught).name} ${stored?'is safely stored.':'joined your team!'}`);b.finished=true;b.won=true;
         this.store.event(p.id,p.regionId,'capture',`${p.name} caught ${creatureInfo(caught).name}.`);p.journal.unshift(`Caught ${creatureInfo(caught).name}.`);
         p.stats!.captures++;if(!p.stats!.caughtSpecies.includes(creatureKey(caught)))p.stats!.caughtSpecies.push(creatureKey(caught));
@@ -305,7 +303,7 @@ export class World {
     if(!p.party[p.active]||p.party[p.active].hp<=0)p.active=p.party.findIndex(c=>c.hp>0);
     let other=this.store.players().find(o=>o.id!==p.id&&this.online.has(o.id)&&o.regionId===p.regionId&&o.sceneId===p.sceneId&&o.battle?.kind==='coop'&&!o.battle.finished);
     if(other){const b=other.battle!;if((b.participants?.length??0)>=4)throw new GameError('That guardian group is full.');if(b.round>0)throw new GameError('The guardian battle has already begun.');b.participants!.push(p.id);b.roundStartedAt=Date.now();p.battle=structuredClone(b);for(const id of b.participants!)if(id!==p.id){const member=this.store.player(id)!;member.battle=structuredClone(b);this.store.savePlayer(member);}return;}
-    p.battle={id:randomUUID(),kind:'coop',enemy:this.makeCreature('pikachu',12),round:0,roundStartedAt:Date.now(),log:['A Waystone guardian appeared. A friend can join you here!'],won:false,finished:false,rewardGiven:false,participants:[p.id],actions:{}};
+    p.battle={id:crypto.randomUUID(),kind:'coop',enemy:this.makeCreature('pikachu',12),round:0,roundStartedAt:Date.now(),log:['A Waystone guardian appeared. A friend can join you here!'],won:false,finished:false,rewardGiven:false,participants:[p.id],actions:{}};
   }
   coopAction(p:Player,action:'attack'|'special'){
     this.moveChoice(p.party[p.active],action);

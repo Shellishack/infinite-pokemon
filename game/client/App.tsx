@@ -16,11 +16,20 @@ import AgentPanel from './AgentPanel';
 import VarietyPanels,{type VarietyTab} from './VarietyPanels';
 import {creatureImage} from './content-art';
 import {creatureInfo} from '../shared/model';
+import {DemoSocket,acquireDemoSocket,type DemoHello} from './demo-transport';
 const GameCanvas=lazy(()=>import('./GameCanvas'));
+
+// Vercel Analytics custom events. Never carries save contents or trainer text —
+// event names only. No-ops outside the Vercel-hosted site.
+let analyticsEvents: Set<string> | null = null;
+function trackEvent(name: string){try{analyticsEvents??=new Set();if(analyticsEvents.has(name))return;analyticsEvents.add(name);void import('@vercel/analytics').then(({track})=>track(name));}catch{/* analytics unavailable */}}
+
+export const DOWNLOAD_URL='https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.2.0';
+export const TAKE_FURTHER_COPY='Take your adventure further. Download the game, import your save, and connect Codex to generate new places.';
 
 type SessionMode = 'singleplayer' | 'multiplayer';
 interface Host { hostToken:string;status:GenerationStatus;ready:boolean;starting:boolean;sessionMode:SessionMode;name:string;addresses:string[];gamePort:number;preview?:boolean;parentUrl?:string;renderDepth?:number;generationBatchSize?:number;rememberedConnection?:boolean;harnessExecutable?:string }
-interface Info { name:string;ready:boolean;online:number;capacity:number;hostAvailable:boolean;sessionMode:SessionMode;generation:{state:string;mode:string};gamePort:number;preview?:boolean }
+interface Info { name:string;ready:boolean;online:number;capacity:number;hostAvailable:boolean;sessionMode:SessionMode;generation:{state:string;mode:string};gamePort:number;gameBase?:string;preview?:boolean }
 interface Dialog {title:string;text:string;connectRequired?:boolean;interaction?:SceneObject}
 // Stable save association for browsers created before the branding change.
 const sessionKey='infinite-pokemon-session-v1';
@@ -47,7 +56,7 @@ function Modal({title,children,onClose,dialogue=false}:{title:string;children:Re
   }}><div className="modal-title"><h2>{title}</h2>{onClose?<button className="close-button" aria-label="Close" onClick={onClose}>×</button>:null}</div>{children}</div></div>;
 }
 
-export default function App(){
+export default function App({siteLocale}:{siteLocale?:'en'|'zh-CN'}={}){
   const [info,setInfo]=useState<Info|null>(null),[host,setHost]=useState<Host|null>(null),[mode,setMode]=useState<'welcome'|'multiplayer'|'host'|'join'>(()=>new URLSearchParams(location.search).has('join')?'join':'welcome');
   const [token,setToken]=useState<string|null>(null),[state,setState]=useState<GameState|null>(null),[connected,setConnected]=useState(false);
   const [busy,setBusy]=useState(''),[error,setError]=useState(''),[dialog,setDialog]=useState<Dialog|null>(null),[tab,setTab]=useState<'journal'|'party'|'map'|'bag'|'trainer'|VarietyTab|null>(null),[menuOpen,setMenuOpen]=useState(false);
@@ -69,25 +78,34 @@ export default function App(){
   const [encounterId,setEncounterId]=useState<string>();
   const [savesOpen,setSavesOpen]=useState(false);
   const [mapWaiting,setMapWaiting]=useState(false);
-  const socket=useRef<WebSocket|null>(null),localLaunch=useRef(false),stateRef=useRef(state),commands=useRef(new Map<string,{action:Action;battleId?:string}>());stateRef.current=state;
+  // Browser demo mode: set once /api/info proves no local server exists.
+  const [demo,setDemo]=useState<DemoHello|null>(null);
+  const demoSocket=useRef<DemoSocket|null>(null);
+  const socket=useRef<WebSocket|DemoSocket|null>(null),localLaunch=useRef(false),stateRef=useRef(state),commands=useRef(new Map<string,{action:Action;battleId?:string}>());stateRef.current=state;
   const isPreview=!!(state as (GameState&{preview?:boolean})|null)?.preview;
-  useEffect(()=>{let active=true;async function refresh(){try{const i=await request('/api/info');if(!active)return;setInfo(i);if(i.hostAvailable){const h=await request('/api/bootstrap');if(active)setHost(h);}}catch(e){if(active)setError((e as Error).message);}}void refresh();const timer=setInterval(refresh,2000);return()=>{active=false;clearInterval(timer);};},[]);
+  useEffect(()=>{let active=true;async function refresh(){try{const i=await request('/api/info');if(!active)return;setInfo(i);if(i.hostAvailable){const h=await request('/api/bootstrap');if(active)setHost(h);}    }catch(e){if(active&&!demo&&!demoSocket.current&&document.querySelector('meta[name="infinite-pokemon-site"]')){// Static export with no game server: run the self-contained browser demo in a worker.
+    const socket=acquireDemoSocket(new URLSearchParams(location.search).has('demo-debug'));demoSocket.current=socket;
+    socket.onHello=hello=>{if(active)setDemo(hello);};
+    socket.onExport=save=>{socket.downloadSave(save);setDialog({title:'Progress exported',text:TAKE_FURTHER_COPY+' Provider limits and generation time still apply in the full game.'});};
+    void socket.hello.then(hello=>{if(active)setDemo(hello);});
+  }}}void refresh();const timer=setInterval(refresh,2000);return()=>{active=false;clearInterval(timer);};},[]);
   useEffect(()=>{
     if(!token)return;let stopped=false,retry:ReturnType<typeof setTimeout>;let attempts=0;
-    function connect(){if(stopped)return;const ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/play`);socket.current=ws;let firstState=true;
+    function connect(){if(stopped)return;const ws:WebSocket|DemoSocket=demo?demoSocket.current!:new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/play`);socket.current=ws;let firstState=true;
       ws.onopen=()=>{ws.send(JSON.stringify({type:'auth',token}));};
-      ws.onmessage=e=>{const data=JSON.parse(e.data);if(data.type==='state'){attempts=0;setMapWaiting(!!data.streaming?.travel);setConnected(true);if(firstState){firstState=false;setEncounterId(undefined);setConnectionEpoch(value=>value+1);setMovementFeedback(undefined);setMoveRequest(undefined);setInteractRequest(undefined);}else{const previous=stateRef.current?.me;if(data.me.battle?.id!==previous?.battle?.id){setEncounterId(data.me.battle?.id);if(data.me.battle&&!data.me.battle.finished)playSfx('encounter');}if(previous?.sceneId!==data.me.sceneId)playSfx('door');else if(previous?.regionId!==data.me.regionId)playSfx('travel');}setState(prev=>({...data,region:data.region??prev?.region}));}
+      ws.onmessage=(e:{data:string})=>{const data=JSON.parse(e.data);if(data.type==='state'){attempts=0;setMapWaiting(!!data.streaming?.travel);setConnected(true);if(firstState){firstState=false;setEncounterId(undefined);setConnectionEpoch(value=>value+1);setMovementFeedback(undefined);setMoveRequest(undefined);setInteractRequest(undefined);}else{const previous=stateRef.current?.me;if(data.me.battle?.id!==previous?.battle?.id){setEncounterId(data.me.battle?.id);if(data.me.battle&&!data.me.battle.finished)playSfx('encounter');}if(previous?.sceneId!==data.me.sceneId)playSfx('door');else if(previous?.regionId!==data.me.regionId)playSfx('travel');}setState(prev=>({...data,region:data.region??prev?.region}));}
         if(data.type==='result'){
           const issued=commands.current.get(data.id);commands.current.delete(data.id);if(issued&&Array.isArray(data.sounds))for(const cue of data.sounds)if(isSfxCue(cue))playSfx(cue);
           if(data.movement)setMovementFeedback(data.movement);
           if(data.service){setDialog(null);setMenuOpen(false);setTab(data.service);}
           else if(data.code==='MAP_LOADING')setMapWaiting(true);
-          else if(data.code==='PREVIEW_BOUNDARY')setDialog({title:'The edge of the preview',text:data.text,connectRequired:true});
+          else if(data.code==='PREVIEW_BOUNDARY'){if(demo)trackEvent('demo_boundary');setDialog({title:'The edge of the preview',text:data.text,connectRequired:true});}
           else if(data.text){if(issued?.battleId)setBattleNotices(previous=>[...previous.slice(-20),{id:data.id,battleId:issued.battleId!,text:data.text}]);else setDialog({title:data.title??(data.lessonComplete?'A milestone on your journey':'Your adventure'),text:data.text,interaction:data.interaction});}
         }
         if(data.type==='error'&&data.code==='MAP_LOADING'){setMapWaiting(true);return;}if(data.type==='error'){playSfx('error');setBattleErrorVersion(value=>value+1);if(data.code==='PREVIEW_BOUNDARY')setDialog({title:'The edge of the preview',text:data.message,connectRequired:true});else setError(data.message);}
       };
-      ws.onclose=event=>{setConnected(false);if(stopped)return;
+      ws.onclose=(event:{code:number;reason:string})=>{setConnected(false);if(stopped)return;
+        if(demo){stopped=true;return;}
         if((event.code===1000&&event.reason==='The host closed the multiplayer session. Your progress is saved.')||([1000,1008].includes(event.code)&&event.reason==='Session opened elsewhere')){
           stopped=true;setToken(null);setState(null);setMode('welcome');setMenuOpen(false);setTab(null);setDialog(null);setHostOpen(false);setError(event.reason==='Session opened elsewhere'?'This save is open in another window. Your progress is saved.':event.reason);return;
         }
@@ -96,20 +114,35 @@ export default function App(){
     }
     connect();return()=>{stopped=true;clearTimeout(retry);socket.current?.close();socket.current=null;};
   },[token]);
+  // In demo mode the socket is created before the session token exists; once the
+  // token is set, connect() runs and must flush the auth the worker already sent.
+  useEffect(()=>{const ws=socket.current;if(demo&&token&&ws instanceof DemoSocket&&ws.readyState===DemoSocket.OPEN){ws.send(JSON.stringify({type:'auth',token}));}},[demo,token]);
   useEffect(()=>{if(!error)return;const t=setTimeout(()=>setError(''),6500);return()=>clearTimeout(t);},[error]);
-  const act=useCallback((action:Action)=>{if(socket.current?.readyState===WebSocket.OPEN){const id=commandId();commands.current.set(id,{action,battleId:['battle','potion','useItem','switch'].includes(action.kind)?stateRef.current?.me.battle?.id:undefined});if(commands.current.size>200)commands.current.delete(commands.current.keys().next().value!);socket.current.send(JSON.stringify({type:'command',id,action}));}},[]);
+  const act=useCallback((action:Action)=>{if(socket.current?.readyState===1){const id=commandId();commands.current.set(id,{action,battleId:['battle','potion','useItem','switch'].includes(action.kind)?stateRef.current?.me.battle?.id:undefined});if(commands.current.size>200)commands.current.delete(commands.current.keys().next().value!);socket.current.send(JSON.stringify({type:'command',id,action}));}},[]);
   const run=async(label:string,fn:()=>Promise<void>)=>{if(busy)return;setBusy(label);setError('');setConnectionError(null);try{await fn();}catch(e){if(/Codex|connection|Opening your save/.test(label))setConnectionError((e as Error).message);else setError((e as Error).message);}finally{setBusy('');}};
   const hostAction=(action:string,data:unknown={})=>request('/api/host/'+action,data,host?.hostToken);
   const beginLocal=(sessionMode:SessionMode)=>{
     if(!info?.hostAvailable){setError('Single player and hosting run on your computer. Open the desktop game or your local server console.');return;}
     setLocalMode(sessionMode);setPromotingPreview(sessionMode==='multiplayer');setMode('host');setError('');setConnectionError(null);
     if(sessionMode==='singleplayer'&&!host?.parentUrl&&new URLSearchParams(location.search).get('world')!=='main'){
-      void run('Opening your save',async()=>{const current=await request('/api/bootstrap') as Host;setHost(current);const resume=await request('/api/host/resume',{},current.hostToken);if(resume.url&&new URL(resume.url).origin!==location.origin){const target=new URL(resume.url);target.searchParams.set('play','1');location.assign(target.href);}else setAutoEnter(true);});
+      void run('Opening your save',async()=>{const current=await request('/api/bootstrap') as Host;setHost(current);const resume=await request('/api/host/resume',{},current.hostToken);if(resume.url&&new URL(resume.url).origin!==location.origin){const target=new URL(resume.url);target.pathname=info?.gameBase??'/';target.search='';target.searchParams.set('play','1');location.assign(target.href);}else setAutoEnter(true);});
     }else setAutoEnter(true);
   };
   const remember=(value:string)=>{localStorage.setItem(sessionKey,value);setToken(value);setMode('welcome');setHostOpen(false);const url=new URL(location.href);url.searchParams.delete('play');url.searchParams.delete('preview');history.replaceState(null,'',url.pathname+url.search+url.hash);};
   const connectPreview=()=>{setDialog(null);setLocalMode('singleplayer');setPromotingPreview(true);setAutoEnter(true);setHostOpen(true);};
-  const playPreview=()=>run('Opening tutorial preview',async()=>{setAutoEnter(false);const result=await hostAction('preview');const url=new URL(result.previewUrl);url.searchParams.set('preview','1');location.assign(url.href);});
+  const startDemo=()=>{const socket=demoSocket.current;if(!socket)return;setBusy('Opening the demo');socket.control({type:'create',name:name.trim()||'Trainer'});setBusy('');setToken('demo-session');trackEvent('demo_start');};
+  const resumeDemo=()=>{demoSocket.current?.control({type:'resume'});setToken('demo-session');};
+  const exportDemo=()=>{setDialog(null);demoSocket.current?.control({type:'export'});trackEvent('demo_export');};
+  // Gameplay milestones for the demo funnel (names only).
+  const milestones=useRef({moved:false,battle:false,tutorial:false});
+  useEffect(()=>{if(!demo||!state)return;const me=state.me;
+    if(!milestones.current.moved&&me.steps>0){milestones.current.moved=true;trackEvent('demo_first_movement');}
+    if(!milestones.current.battle&&me.stats&&me.stats.captures+me.stats.defeatedTrainers.length>0){milestones.current.battle=true;trackEvent('demo_first_battle_complete');}
+    if(!milestones.current.tutorial&&me.tutorial>=5){milestones.current.tutorial=true;trackEvent('demo_tutorial_complete');}
+  },[demo,state]);
+  // Test/screenshot hook, active only with ?demo-debug=1 on the static export.
+  useEffect(()=>{if(new URLSearchParams(location.search).has('demo-debug'))(window as unknown as {__demoTeleport?:(x:number,y:number,sceneId?:string)=>void}).__demoTeleport=(x,y,sceneId)=>demoSocket.current?.control({type:'debug-teleport',x,y,sceneId});},[demo]);
+  const playPreview=()=>run('Opening tutorial preview',async()=>{setAutoEnter(false);const result=await hostAction('preview');const url=new URL(result.previewUrl);url.pathname=info?.gameBase??'/';url.search='';url.searchParams.set('preview','1');location.assign(url.href);});
   const join=()=>run('Joining the session',async()=>{
     let target:URL;
     try{target=address.trim()?new URL(address.includes('://')?address:'http://'+address):new URL(location.origin);if(address.trim()&&!address.includes('://')&&!target.port)target.port=String(info?.gamePort??8787);}
@@ -117,7 +150,7 @@ export default function App(){
     if(!['http:','https:'].includes(target.protocol))throw new Error('Use an http:// or https:// server address.');
     if(!address.trim()&&info?.hostAvailable)target.port=String(info.gamePort);
     if(target.origin!==location.origin){
-      target.pathname='/';target.search='';target.searchParams.set('join','1');
+      target.pathname=info?.gameBase??'/';target.search='';target.searchParams.set('join','1');
       if(name.trim())target.searchParams.set('nickname',name.trim());
       location.assign(target.href);return;
     }
@@ -246,7 +279,7 @@ export default function App(){
   const interactLabel=target?.kind==='door'?(target.targetScene==='outdoor'?'Exit building':'Enter building'):target?.role?'Talk to '+(target.name??'traveler'):target?.kind==='item'?'Pick up item':target?.kind==='sign'?'Read sign':target?'Inspect '+(target.name??target.kind):'Face something beside you';
   const errorToast=error?<div className="toast" role="alert">{error}<button aria-label="Dismiss error" onClick={()=>setError('')}>×</button></div>:null;
   const savesDialog=savesOpen&&host?<Modal title="Saves & runs" onClose={()=>setSavesOpen(false)}><SaveBrowser hostToken={host.hostToken} onClose={()=>setSavesOpen(false)}/></Modal>:null;
-  const dialogue=dialog?<Modal title={dialog.title} dialogue onClose={()=>setDialog(null)}><p className="dialogue-text">{dialog.text}</p>{dialog.interaction?.kind==="npc"&&state?.variety?.npcTraits?<p className="npc-traits">{state.variety.npcTraits.temperament} · {state.variety.npcTraits.interest}</p>:null}{dialog.connectRequired?<button className="button primary" onClick={connectPreview}>Connect to Codex</button>:null}{state?.me.tutorial===4&&state.me.tutorialFlags.includes('trainerWon')&&target?.role==='guide'?<div className="button-row"><button className="button" onClick={()=>{setDialog(null);act({kind:'choice',choice:'protect'});}}>Protect the Waystone</button><button className="button" onClick={()=>{setDialog(null);act({kind:'choice',choice:'explore'});}}>Explore beyond it</button></div>:null}{dialog.interaction?.role==='guide'&&state&&[1,2].includes(state.me.tutorial)&&state.me.lessonRegion===state.me.regionId&&!state.me.battle?<button className="button" onClick={()=>{setDialog(null);act({kind:'encounter'});}}>{state.me.tutorial===1?'Practice battle':'Practice catching'}</button>:null}<button className="button primary dialogue-next" onClick={()=>setDialog(null)}>Continue <span className="dialogue-key-hint">E / Space</span><span aria-hidden="true">▼</span></button></Modal>:null;
+  const dialogue=dialog?<Modal title={dialog.title} dialogue onClose={()=>setDialog(null)}><p className="dialogue-text">{dialog.text}</p>{dialog.interaction?.kind==="npc"&&state?.variety?.npcTraits?<p className="npc-traits">{state.variety.npcTraits.temperament} · {state.variety.npcTraits.interest}</p>:null}{dialog.connectRequired?(demo?<div className="button-row"><button className="button primary" onClick={exportDemo}>Export progress</button><a className="button" href={DOWNLOAD_URL} target="_blank" rel="noopener noreferrer">Download &amp; setup</a><button className="button" onClick={()=>setDialog(null)}>Keep exploring the demo</button></div>:<button className="button primary" onClick={connectPreview}>Connect to Codex</button>):null}{state?.me.tutorial===4&&state.me.tutorialFlags.includes('trainerWon')&&target?.role==='guide'?<div className="button-row"><button className="button" onClick={()=>{setDialog(null);act({kind:'choice',choice:'protect'});}}>Protect the Waystone</button><button className="button" onClick={()=>{setDialog(null);act({kind:'choice',choice:'explore'});}}>Explore beyond it</button></div>:null}{dialog.interaction?.role==='guide'&&state&&[1,2].includes(state.me.tutorial)&&state.me.lessonRegion===state.me.regionId&&!state.me.battle?<button className="button" onClick={()=>{setDialog(null);act({kind:'encounter'});}}>{state.me.tutorial===1?'Practice battle':'Practice catching'}</button>:null}<button className="button primary dialogue-next" onClick={()=>setDialog(null)}>Continue <span className="dialogue-key-hint">E / Space</span><span aria-hidden="true">▼</span></button></Modal>:null;
 
   const connectionErrorDialog=connectionError?<Modal title="Connection problem" onClose={()=>{setConnectionError(null);setMode('welcome');setAutoEnter(false);}}><p>{connectionError}</p><div className="button-row"><button className="button primary" disabled={!!busy} onClick={()=>{setConnectionError(null);if(harnessReady){setMode('host');setAutoEnter(true);}else void connectAndPlay();}}>Try again</button><button className="button" onClick={()=>{setConnectionError(null);setMode('welcome');setAutoEnter(false);}}>Back</button></div></Modal>:null;
   if(!state)return <div className="console-shell">
@@ -259,8 +292,19 @@ export default function App(){
       </section>:<>      <div className="title-heading"><h1 className="title-wordmark"><img className="brand-logo" src="/branding/infinite-pokemon-logo.svg" alt="Infinite Pokémon" width="800" height="260" fetchPriority="high"/></h1></div>
       <div className="title-companions">{STARTERS.map(s=><CreatureArt key={s} species={s} size={128}/>)}</div>
       <nav className="title-menu pixel-window" aria-label="Title menu">
+        {demo?<div className="demo-panel">
+          <h2 className="demo-heading">Browser demo</h2>
+          {demo.storageBusy?<p className="progress-message" role="status">This demo save is open in another tab. Close that tab to continue here.</p>:<>
+            {demo.hasSave?<button className="button primary" onClick={resumeDemo}><span>Continue your adventure</span></button>:null}
+            <label className="field demo-name">Trainer nickname<input value={name} onChange={e=>setName(e.target.value)} maxLength={18} placeholder="Trainer" autoComplete="off"/></label>
+            <button className="button" disabled={busy==='Opening the demo'} onClick={startDemo}><span>{demo.hasSave?'Start a new demo save':'Start your adventure'}</span></button>
+            {!demo.storageAvailable?<p className="small-copy demo-temp-note">Temporary session mode: this browser cannot store progress. Export your progress before closing.</p>:null}
+            <p className="small-copy muted">Five prepared maps · no account · autosaves in this browser</p>
+          </>}
+        </div>:<>
         <button disabled={!info} onClick={()=>beginLocal('singleplayer')}><span>Single player</span></button>
         <button onClick={()=>setMode('multiplayer')}><span>Multiplayer</span></button>
+        </>}
       </nav>
       <div className="title-footer">Your adventure, alone or together.</div>
       {host?<button className="home-settings-button" onClick={openHomeSettings} aria-label="Home settings">Settings</button>:null}
@@ -310,8 +354,8 @@ export default function App(){
           <button onClick={()=>openTab('nursery')}>NURSERY</button>
           <button onClick={()=>openTab('rides')}>RIDES</button>
           <button onClick={()=>openTab('records')}>RECORDS</button>
-          <button onClick={openAgent}>AGENT</button>
-          <button onClick={()=>{setMenuOpen(false);act({kind:'save'});}}>SAVE</button>
+          <button onClick={openAgent} hidden={!!demo}>AGENT</button>
+          {demo?<button onClick={()=>{setMenuOpen(false);exportDemo();}}>EXPORT</button>:<button onClick={()=>{setMenuOpen(false);act({kind:'save'});}}>SAVE</button>}
           {host?<button onClick={()=>{setMenuOpen(false);setSavesOpen(true);}}>SAVES</button>:null}
           {host?<button onClick={()=>{setMenuOpen(false);setHostOpen(true);}}>SESSION</button>:null}
           <button onClick={()=>setMenuOpen(false)}>EXIT</button>
@@ -326,7 +370,7 @@ export default function App(){
       <div className="touch-controls" aria-label="Touch controls">{(['north','west','south','east'] as Direction[]).map(direction=><button key={direction} data-direction={direction} disabled={blocked} onPointerDown={event=>{if(event.button!==0)return;event.preventDefault();event.currentTarget.setPointerCapture(event.pointerId);setMoveRequest({direction,id:commandId()});setHeldDirection(direction);}} onPointerUp={()=>setHeldDirection(undefined)} onPointerCancel={()=>setHeldDirection(undefined)} onPointerLeave={()=>setHeldDirection(undefined)} onLostPointerCapture={()=>setHeldDirection(undefined)} onClick={event=>{if(event.detail===0)setMoveRequest({direction,id:commandId()});}}>{{north:'↑',west:'←',south:'↓',east:'→'}[direction]}</button>)}</div>
       <div className="control-legend"><span><kbd>W A S D</kbd> MOVE <kbd>E</kbd> INTERACT <kbd>ESC</kbd> MENU</span><span className="world-window-top">{state.players.length} trainer{state.players.length===1?'':'s'} nearby{state.generation.mode==='test'?' · Test harness':''}</span></div>
     </div>
-    {isPreview?<div className="preview-notice"><span>Tutorial preview · 5 prepared areas</span><button className="button" onClick={connectPreview}>Connect to Codex</button></div>:null}
+    {isPreview?<div className="preview-notice">{demo?<><span>Browser demo · 5 prepared areas · autosaves in this browser</span><button className="button" onClick={exportDemo}>Export progress</button></>:<><span>Tutorial preview · 5 prepared areas</span><button className="button" onClick={connectPreview}>Connect to Codex</button></>}</div>:null}
     {tab?<Modal title={{party:'Your Pokémon',bag:'Your bag',trainer:'Trainer card',journal:'Adventure journal',map:'Town map',shop:'Trail shop',nursery:'Companion nursery',records:'Run leaderboards',rides:'Your rides',items:'Items & supplies',codex:'Companion codex'}[tab]} onClose={()=>setTab(null)}>
       {(['shop','nursery','records','rides','items','codex'] as string[]).includes(tab)?<VarietyPanels tab={tab as VarietyTab} state={state} onAction={act}/>:null}
       {tab==='party'?<><div className="party-list">{me.party.map((creature,index)=><button className={'companion-card '+(index===me.active?'active':'')} key={creature.id} onClick={()=>{if(index!==me.active){setTab(null);act({kind:'switch',index});}}}><CreatureArt creature={creature} size={80}/><div><strong>{creatureInfo(creature).name}</strong><span>Lv{creature.level}{index===me.active?' · LEADER':''}</span><Health creature={creature}/><small className="creature-traits">{creature.traits?.join(" · ")}</small></div><Ball small/></button>)}</div><p className="menu-help">Choose a Pokémon to lead your party.</p><p>{me.storage.length} Pokémon are resting in storage.</p><div className="storage-list">{me.storage.map(c=><div className="catalog-row" key={c.id}><CreatureArt creature={c} size={48}/><div><strong>{creatureInfo(c).name}</strong><small>Lv{c.level} · {c.hp}/{c.maxHp} HP</small></div><button className="button" onClick={()=>act({kind:"swapStorage",storageId:c.id,partyIndex:me.party.length<6?me.party.length:me.active})}>{me.party.length<6?"Add to team":"Swap with leader"}</button></div>)}</div></>:null}
@@ -342,7 +386,7 @@ export default function App(){
     {hostOpen&&!connectionError?<Modal title="Session" onClose={()=>setHostOpen(false)}>{hostControls}</Modal>:null}
     {savesDialog}
     {(mapWaiting||state.streaming?.travel)&&!hostOpen&&!savesOpen&&!agentOpen?<Modal title="Preparing the next map" onClose={()=>{act({kind:'cancelTravel'});setMapWaiting(false);}}><div className="map-loading" data-phase={state.streaming?.travel?.phase??'queued'}><p>{state.streaming?.travel?.message??'Waiting for the map generation queue…'}</p><p className="small-copy">Destination: {state.streaming?.travel?.name??'Next map'}</p>{['queued','generating'].includes(state.streaming?.travel?.phase??'queued')?<progress aria-label="Map generation in progress"/>:null}{state.streaming?.travel?.queuePosition?<p>Queue position: {state.streaming.travel.queuePosition}</p>:null}{state.streaming?.travel?.phase==='generating'?<p>Generating for {Math.floor(state.streaming.travel.elapsedMs/1000)} seconds…</p>:null}<p className="small-copy">You will enter automatically when this map is ready.</p><div className="button-row"><button className="button" onClick={openAgent}>View agent activity</button>{state.streaming?.travel?.phase==='failed'?<button className="button primary" disabled={!connected} onClick={()=>act({kind:'retryTravel'})}>Retry generation</button>:null}{host?<button className="button" onClick={()=>setHostOpen(true)}>Generation settings</button>:null}<button className="button" onClick={()=>{act({kind:'cancelTravel'});setMapWaiting(false);}}>Cancel travel</button></div></div></Modal>:null}
-    {!connected?<div className="reconnecting" role="status">Reconnecting to the world server… Your progress is saved.</div>:null}
+    {!connected&&!demo?<div className="reconnecting" role="status">Reconnecting to the world server… Your progress is saved.</div>:null}
     {errorToast}
   </div>;
 }

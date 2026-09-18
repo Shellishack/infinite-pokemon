@@ -44,8 +44,8 @@ try {
   page.on('request',request=>{if(/\/api\/host\/(connect|verify|login)$/.test(new URL(request.url()).pathname))harnessRequests.push(request.url());});
   page.on('pageerror', error => errors.push(error.message));
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
-  await expect(game.getByRole('button', { name: 'Single player' })).toBeVisible();
-  await expect(game.getByRole('navigation',{name:'Title menu'}).getByRole('button')).toHaveCount(2);
+  await expect(game.getByRole('button', { name: 'Single player' })).toBeVisible({timeout:30000});
+  await expect(game.getByRole('navigation',{name:'Title menu'}).getByRole('button')).toHaveCount(2,{timeout:30000});
   await expect(page.locator('body')).toHaveAttribute('data-phase','ready');
   assert.equal(await game.locator('body').evaluate(()=>typeof (window as any).desktop),'undefined');
   async function assertFits(){

@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { readFileSync, existsSync, mkdirSync, createReadStream } from 'node:fs';
+import { readFileSync, existsSync, mkdirSync, createReadStream, statSync } from 'node:fs';
 import { resolve, join, extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { networkInterfaces } from 'node:os';
@@ -14,10 +14,11 @@ import {MAX_GENERATION_BATCH_SIZE} from '../shared/streaming.js';
 import { World,GameError } from '../engine/world.js';
 import { Generator } from './harness.js';
 import { loadPreviewPack,PREVIEW_REGION_IDS } from './preview.js';
+import { parsePortableSave,applyPortableSave } from './import.js';
 import { upgradeLegacyLayouts } from '../engine/maps.js';
 import { commandSchema } from '../shared/model.js';
 
-async function body(req:IncomingMessage){let size=0;const chunks:Buffer[]=[];for await(const chunk of req){size+=chunk.length;if(size>8192)throw new Error('Request is too large.');chunks.push(chunk);}return JSON.parse(Buffer.concat(chunks).toString()||'{}');}
+async function body(req:IncomingMessage,maxBytes=8192){let size=0;const chunks:Buffer[]=[];for await(const chunk of req){size+=chunk.length;if(size>maxBytes)throw new Error('Request is too large.');chunks.push(chunk);}return JSON.parse(Buffer.concat(chunks).toString()||'{}');}
 function send(res:ServerResponse,status:number,value:unknown){res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(value));}
 function equal(a:string,b:string){return timingSafeEqual(createHash('sha256').update(a).digest(),createHash('sha256').update(b).digest());}
 export interface ServerOptions { dataDir?:string;port?:number;adminPort?:number;host?:string;dev?:boolean;fixture?:boolean;preview?:boolean;parentUrl?:string;saveLibrary?:SaveLibrary }
@@ -53,7 +54,7 @@ export async function createGameServer(options:ServerOptions={}):Promise<GameSer
     const pending=saveLibrary.opening.get(id) as Promise<GameServer>|undefined;if(pending)return pending;
     const task=(async()=>{const run=saveLibrary.run(id);
       if(!existsSync(join(saveLibrary.path(run.directory),'world.sqlite')))throw new Error('This run directory is missing. Restore its save files first.');
-      let child:GameServer;try{child=await createGameServer({dataDir:saveLibrary.path(run.directory),port:run.port??0,adminPort:run.adminPort??0,host:options.host,dev:options.dev,fixture:options.fixture,preview:run.preview,parentUrl:options.parentUrl??localUrl()+'/?world=main',saveLibrary});}catch(error){throw new Error(`The saved run's local ports could not be opened. Close another instance using them and try again. ${(error as Error).message}`);}
+      let child:GameServer;try{child=await createGameServer({dataDir:saveLibrary.path(run.directory),port:run.port??0,adminPort:run.adminPort??0,host:options.host,dev:options.dev,fixture:options.fixture,preview:run.preview,parentUrl:options.parentUrl??localUrl()+gameBase+'?world=main',saveLibrary});}catch(error){throw new Error(`The saved run's local ports could not be opened. Close another instance using them and try again. ${(error as Error).message}`);}
       previewChildren.add(child);return child;
     })();saveLibrary.opening.set(id,task);try{return await task;}finally{saveLibrary.opening.delete(id);}
   }
@@ -81,7 +82,7 @@ export async function createGameServer(options:ServerOptions={}):Promise<GameSer
       }
       id??=randomUUID();const savedPorts=store.meta('previewPorts:'+id);
       const ports=savedPorts?z.object({port:z.number().int().min(1).max(65535),adminPort:z.number().int().min(1).max(65535)}).parse(JSON.parse(savedPorts)):{port:0,adminPort:0};
-      let child:GameServer;try{child=await createGameServer({dataDir:join(store.root,'previews',id),...ports,host:options.host,dev:options.dev,preview:true,parentUrl:localUrl()+'/?world=main',saveLibrary});}
+      let child:GameServer;try{child=await createGameServer({dataDir:join(store.root,'previews',id),...ports,host:options.host,dev:options.dev,preview:true,parentUrl:localUrl()+gameBase+'?world=main',saveLibrary});}
       catch(error){throw new Error(`The saved tutorial world's local ports could not be opened. Close another instance using them, then try again. ${(error as Error).message}`);}
       previewChildren.add(child);latestChild=child;store.setMeta('latestPreviewId',id);store.setMeta('previewPorts:'+id,JSON.stringify({port:child.port,adminPort:child.adminPort}));saveLibrary.activate(child.store.meta('runId')!);return child;
     })();try{return await openingChild;}finally{openingChild=undefined;}
@@ -127,6 +128,11 @@ export async function createGameServer(options:ServerOptions={}):Promise<GameSer
     }catch(error){if(closedStores)reopen(false);throw error;}
     finally{resetting=false;saveLibrary.closing=false;}
   }
+  // The exported website (Next.js static export in out/) is served when present;
+  // the game client lives at /game/ inside it. Fall back to the legacy Vite dist/.
+  const exportRoot=resolve('out');
+  const exportReady=existsSync(join(exportRoot,'index.html'));
+  const gameBase=exportReady?'/game/':'/';
   const vite=options.dev?await(await import('vite')).createServer({server:{middlewareMode:true,hmr:false,ws:false,watch:options.fixture?null:{ignored:['**/.test-data/**','**/context/**','**/generation/**','**/generated-content/**',store.root.replaceAll('\\','/')+'/**']},fs:{deny:['.env','.env.*','*.{crt,pem}','**/.git/**','**/*.sqlite*','**/context/**','**/generation/**','**/generated-content/**',store.root.replaceAll('\\','/')+'/**']}},appType:'spa'}):null;
   const rates=new Map<string,{at:number,count:number}>();
   async function configure<T>(run:()=>Promise<T>){configuring=true;try{return await run();}finally{configuring=false;}}
@@ -143,7 +149,7 @@ export async function createGameServer(options:ServerOptions={}):Promise<GameSer
         send(res,200,generator.agentDetails());return;
       }
       if(req.method==='POST'&&req.headers.origin){const origin=new URL(req.headers.origin);if(origin.host!==req.headers.host)return send(res,403,{error:'Cross-origin requests are not permitted.'});}
-      if(url.pathname==='/api/info'){send(res,200,{name:store.meta('name'),ready,preview:previewActive,sessionMode:sessionMode(),online:sockets.size,capacity:8,generation:{state:generator.status.state,mode:generator.status.mode},hostAvailable:admin,gamePort:port});return;}
+      if(url.pathname==='/api/info'){send(res,200,{name:store.meta('name'),ready,preview:previewActive,sessionMode:sessionMode(),online:sockets.size,capacity:8,generation:{state:generator.status.state,mode:generator.status.mode},hostAvailable:admin,gamePort:port,gameBase});return;}
       if(url.pathname==='/api/bootstrap'&&admin){
         if(!['127.0.0.1','localhost'].includes(url.hostname))return send(res,403,{error:'Use the local host console.'});
         send(res,200,{hostToken,rememberedConnection:generator.hasRememberedConnection(),harnessExecutable:store.meta('harnessExecutable')??'',renderDepth:world.renderDepth(),generationBatchSize:generator.batchSize(),status:generator.status,ready,preview:previewActive,parentUrl:options.parentUrl??null,harnessReady:generator.verified,starting,startupError,sessionMode:sessionMode(),name:store.meta('name'),addresses:addresses(),publicUrl:publicUrl(),gamePort:port});return;
@@ -153,7 +159,7 @@ export async function createGameServer(options:ServerOptions={}):Promise<GameSer
         if(!isHost)return send(res,403,{error:'Host administration is local and authenticated.'});
         if(saveLibrary.closing)throw new Error('The save library is shutting down.');
         if(switchingRun)throw new Error('A run is opening. Wait for it to finish.');
-        if(req.method!=='POST')return send(res,405,{error:'Use POST.'});const data=await body(req);
+        if(req.method!=='POST')return send(res,405,{error:'Use POST.'});const data=await body(req,url.pathname==='/api/host/import'?4*1024*1024:8192);
         if(configuring&&url.pathname!=='/api/host/backup')throw new Error('Wait for the current harness connection or verification request to finish.');
         if(starting&&['/api/host/connect','/api/host/login','/api/host/verify','/api/host/budget'].includes(url.pathname))throw new Error('Wait for the opening maps to finish before changing the harness or its budget.');
         switch(url.pathname){
@@ -183,12 +189,21 @@ export async function createGameServer(options:ServerOptions={}):Promise<GameSer
           case '/api/host/saves/open': send(res,200,await switchRun(z.string().uuid().parse(data.runId)));return;
           case '/api/host/preview': {
             if(options.parentUrl){if(!previewActive)return send(res,409,{error:'Return to the original world menu to create another tutorial preview.',parentUrl:options.parentUrl});send(res,200,{previewUrl:localUrl(),preview:true,parentUrl:options.parentUrl});return;}
-            const child=await childWorld(true);send(res,200,{previewUrl:`http://127.0.0.1:${child.adminPort}`,preview:true,parentUrl:localUrl()+'/?world=main'});return;
+            const child=await childWorld(true);send(res,200,{previewUrl:`http://127.0.0.1:${child.adminPort}`,preview:true,parentUrl:localUrl()+gameBase+'?world=main'});return;
+          }
+          case '/api/host/import': {
+            if(options.parentUrl)return send(res,409,{error:'Return to the original world menu to import a save.',parentUrl:options.parentUrl});
+            // Import is host-only and always creates a new isolated run; nothing existing is overwritten.
+            const text=typeof data.save==='string'?data.save:JSON.stringify(data.save??null);
+            const save=parsePortableSave(text);
+            const child=await childWorld(true);
+            applyPortableSave(child.store,save);
+            send(res,200,{previewUrl:`http://127.0.0.1:${child.adminPort}`,preview:true,imported:true,parentUrl:localUrl()+gameBase+'?world=main'});return;
           }
           case '/api/host/resume': {
-            const active=saveLibrary.active();if(!options.parentUrl&&active&&active!==runId){const child=await openSavedRun(active);send(res,200,{url:`http://127.0.0.1:${child.adminPort}`,redirect:true,preview:child.preview,parentUrl:localUrl()+'/?world=main'});return;}
+            const active=saveLibrary.active();if(!options.parentUrl&&active&&active!==runId){const child=await openSavedRun(active);send(res,200,{url:`http://127.0.0.1:${child.adminPort}`,redirect:true,preview:child.preview,parentUrl:localUrl()+gameBase+'?world=main'});return;}
             if(options.parentUrl||!store.meta('latestPreviewId')){send(res,200,{url:localUrl(),redirect:false,preview:previewActive,parentUrl:options.parentUrl??null});return;}
-            const child=await childWorld(false);send(res,200,{url:`http://127.0.0.1:${child.adminPort}`,redirect:true,preview:child.preview,parentUrl:localUrl()+'/?world=main',hasOriginalWorld:store.players().length>0});return;
+            const child=await childWorld(false);send(res,200,{url:`http://127.0.0.1:${child.adminPort}`,redirect:true,preview:child.preview,parentUrl:localUrl()+gameBase+'?world=main',hasOriginalWorld:store.players().length>0});return;
           }
           case '/api/host/disconnect': await configure(()=>generator.disconnect());send(res,200,{disconnected:true});return;
           case '/api/host/switch-connection': send(res,200,await configure(()=>generator.switchConnection(z.string().trim().max(500).parse(data.executable??''))));return;
@@ -246,12 +261,19 @@ export async function createGameServer(options:ServerOptions={}):Promise<GameSer
       }
       if(url.pathname.startsWith('/api/'))return send(res,404,{error:'Not found.'});
       if(vite){vite.middlewares(req,res,()=>send(res,404,{error:'Not found.'}));return;}
-      const root=resolve('dist'),file=resolve(root,'.'+decodeURIComponent(url.pathname));
+      const root=exportRoot&&existsSync(join(exportRoot,'index.html'))?exportRoot:resolve('dist');
+      const pathname=decodeURIComponent(url.pathname);
+      let file=resolve(root,'.'+pathname);
       const safe=file===root||file.startsWith(root+'/')||file.startsWith(root+'\\');if(!safe)return send(res,403,{error:'Invalid path.'});
-      const asset=existsSync(file)&&extname(file)?file:join(root,'index.html');
-      if(!existsSync(asset))return send(res,503,{error:'Build the client with npm run build before starting production.'});
-      const types:Record<string,string>={'.html':'text/html','.js':'text/javascript','.css':'text/css','.woff':'font/woff','.woff2':'font/woff2','.wav':'audio/wav','.png':'image/png','.svg':'image/svg+xml'};
-      res.writeHead(200,{'Content-Type':types[extname(asset)]??'application/octet-stream'});createReadStream(asset).pipe(res);
+      if(existsSync(file)&&statSync(file).isDirectory())file=join(file,'index.html');
+      if(!existsSync(file)&&!extname(file)&&existsSync(file+'.html'))file=file+'.html';
+      if(!existsSync(file)){
+        if(!extname(pathname)&&!exportReady){const fallback=join(root,'index.html');if(existsSync(fallback))file=fallback;}
+        else{const notFound=join(root,'404.html');if(existsSync(notFound)){res.writeHead(404,{'Content-Type':'text/html; charset=utf-8'});createReadStream(notFound).pipe(res);return;}}
+      }
+      if(!existsSync(file))return send(res,503,{error:'Build the client with npm run build before starting production.'});
+      const types:Record<string,string>={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.woff':'font/woff','.woff2':'font/woff2','.wav':'audio/wav','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.json':'application/json','.txt':'text/plain'};
+      res.writeHead(200,{'Content-Type':types[extname(file)]??'application/octet-stream'});createReadStream(file).pipe(res);
     }catch(e){send(res,400,{error:e instanceof z.ZodError?e.issues[0].message:(e as Error).message});}
   }
   const publicServer=createServer((q,s)=>void handler(q,s,false));

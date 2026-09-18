@@ -24,6 +24,11 @@ export default function SaveBrowser({hostToken,onClose}:{hostToken:string;onClos
       <label className="field">Save or run name<input maxLength={48} value={name} onChange={event=>setName(event.target.value)} placeholder="Give this moment a name"/></label>
       <div className="button-row"><button className="button primary" disabled={busy||!current.summary}>Save checkpoint</button><button type="button" className="button" disabled={busy} onClick={()=>void perform(()=>go('/api/host/saves/new',{name:name.trim()||'New run'}))}>New {current.preview?'tutorial ':''}run</button></div>
     </form>
+    <div className="save-import">
+      <h3>Import a browser-demo save</h3>
+      <p className="small-copy">Bring a save exported from the website demo into a new isolated run. Your existing runs are never changed.</p>
+      <input type="file" accept="application/json,.json" aria-label="Choose a demo save file" disabled={busy} onChange={event=>{const file=event.target.files?.[0];event.target.value='';if(!file)return;void perform(async()=>{const text=await file.text();const result=await api('/api/host/import',{save:text});location.assign(result.previewUrl);});}}/>
+    </div>
     {error?<p role="alert" className="save-error">{error}</p>:null}{notice?<p role="status" className="save-success">{notice}</p>:null}
     <div className="save-columns">
       <section aria-label="Runs"><h3>Your runs</h3><div className="save-run-list">{catalog.runs.map(item=><button key={item.id} className={'save-run '+(run.id===item.id?'selected':'')} aria-pressed={run.id===item.id} onClick={()=>{setSelectedRun(item.id);setSelectedCheckpoint('');}}><strong>{item.name}</strong><small>{item.id===current.id?'CURRENT · ':''}{item.summary?.location??'Not started'}{item.parentCheckpointId?' · BRANCH':''}</small></button>)}</div>

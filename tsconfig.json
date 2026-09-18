@@ -17,12 +17,25 @@
     "types": [
       "node",
       "vite/client"
+    ],
+    "allowJs": true,
+    "incremental": true,
+    "isolatedModules": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
     ]
   },
   "include": [
     "game",
     "tests",
     "vite.config.ts",
-    "scripts"
+    "scripts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

@@ -1,6 +1,6 @@
 # Infinite Pokémon
 
-**English** | [简体中文](README.zh-CN.md) · [GitHub repository](https://github.com/Shellishack/infinite-pokemon) · [Technical report v0.4 (PDF, provisional)](docs/technical-report/Infinite-Pokemon-Technical-Report-v0.4.pdf)
+**English** | [简体中文](README.zh-CN.md) · [Website & browser demo](https://infinite-pokemon.vercel.app) · [Discord](https://discord.gg/kKbY8xaVxG) · [GitHub repository](https://github.com/Shellishack/infinite-pokemon) · [Technical report v0.4 (PDF, provisional)](docs/technical-report/Infinite-Pokemon-Technical-Report-v0.4.pdf)
 
 ## Quick start with your AI assistant
 

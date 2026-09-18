@@ -70,3 +70,9 @@ button.generation-indicator{pointer-events:auto;text-align:left;cursor:pointer;m
 .connection-page{position:relative;width:min(600px,calc(100% - 32px));margin:28px auto;padding:24px;background:#f8f8f0;text-align:left;color:#303840;min-height:150px}.connection-page>.button.quiet{display:block;margin:18px auto 0;text-align:center}.connection-progress{text-align:center;font-size:25px;padding:20px 8px;margin:0}.title-screen:has(.connection-page){aspect-ratio:auto;min-height:0;padding:16px 0}.connection-page .connect-launch{padding-top:0}.connection-page .connect-intro{font-size:22px}@media(max-width:560px){.connection-page{padding:20px 16px;margin:16px auto;width:calc(100% - 24px)}}
 
 .music-controls{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;font:17px VT323,monospace;color:#b9c8d8;padding:10px 0}.music-controls .music-toggle{font:18px VT323,monospace;background:#303d4c;color:#e4eddd;border:1px solid #70869d;padding:5px 12px;min-height:34px;cursor:pointer}.music-controls .music-toggle:hover{background:#43536a}.music-controls label{display:flex;gap:8px;align-items:center}.music-controls input{width:110px;accent-color:#86bb9c;cursor:pointer}.music-controls input:focus-visible,.music-toggle:focus-visible{outline:2px solid #f8d848;outline-offset:3px}.game-controls>.music-controls{padding:0 0 10px}.music-controls>span{font-size:15px;color:#e7c48e}
+
+/* Browser demo panel on the title screen */
+.demo-panel{display:flex;flex-direction:column;gap:.6rem;padding:.25rem}
+.demo-heading{font-size:12px;margin:0}
+.demo-name input{width:100%}
+.demo-temp-note{color:#b8493f}

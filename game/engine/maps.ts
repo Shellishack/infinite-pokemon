@@ -1,10 +1,8 @@
 import {applyInteriorDesigns,applyNpcBehaviors} from './interiors.js';
-import { createHash, randomUUID } from 'node:crypto';
-import { mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { sha256Hex } from '../shared/sha256.js';
 import { WIDTH, HEIGHT, hashSeed, random, regionId, walkable, storySchema, type Region, type RegionStory, type SceneObject, type RegionScene, type Point } from '../shared/model.js';
 import { getScene, sceneObjects, solidAt } from '../shared/scene.js';
-import type { Store } from '../server/store.js';
+import type { WorldStore } from './store.js';
 import {installServices} from './services.js';
 
 export const LAYOUT_VERSION = 2;
@@ -152,7 +150,7 @@ export function compileRegion(gx:number,gy:number,worldSeed:string,story?:Region
   const seed=hashSeed(worldSeed+':'+gx+','+gy),parsed=storySchema.parse(story??fallbackStory(gx,gy,worldSeed));
   const content={id:regionId(gx,gy),gx,gy,seed,...parsed,...makeLayout(layoutFor(gx,gy,parsed),parsed,seed),layoutVersion:LAYOUT_VERSION};
   applyInteriorDesigns(content.scenes,parsed.interiors);applyNpcBehaviors(content,parsed.npcBehaviors);
-  const hash=createHash('sha256').update(JSON.stringify(content)).digest('hex');
+  const hash=sha256Hex(JSON.stringify(content));
   return {...content,hash,source:gx===0&&gy===0?'authored':story?'codex':'fallback',published:false,createdAt:Date.now()};
 }
 function reachable(region:Region,start:Point){
@@ -183,15 +181,14 @@ export function validateRegion(region:Region){
   return {reachable:seen.size,exits:4};
 }
 export interface LayoutMigrationResult {upgraded:number;movedPlayers:number;backupPath?:string}
-export function upgradeLegacyLayouts(store:Store,ids?:readonly string[]):LayoutMigrationResult {
+export function upgradeLegacyLayouts(store:WorldStore,ids?:readonly string[]):LayoutMigrationResult {
   const selected=store.regions().filter(r=>(r.layoutVersion??1)<LAYOUT_VERSION&&(!ids||ids.includes(r.id)));
   if(!selected.length)return {upgraded:0,movedPlayers:0};
   const replacements=new Map(selected.map(old=>{const{name,description,biome,npcName,greeting,hook,features}=old;
     const next=compileRegion(old.gx,old.gy,store.meta('seed')!,{name,description,biome,npcName,greeting,hook,features});
     next.source=old.source;next.published=old.published;next.createdAt=old.createdAt;validateRegion(next);return[old.id,next] as const;}));
-  const backupDir=join(store.root,'backups');mkdirSync(backupDir,{recursive:true});const backupName='pre-layout-v2-'+Date.now()+'-'+randomUUID().slice(0,8)+'.sqlite',backupPath=join(backupDir,backupName);
   // Startup-only, outside a transaction: include current WAL content in the backup.
-  store.db.prepare('VACUUM INTO ?').run(backupPath);let movedPlayers=0;
+  const backupPath=store.backupDatabase?.('pre-layout-v2');let movedPlayers=0;
   store.transaction(()=>{
     for(const region of replacements.values())store.saveRegion(region);
     for(const p of store.players()){
@@ -205,6 +202,6 @@ export function upgradeLegacyLayouts(store:Store,ids?:readonly string[]):LayoutM
       if(p.returnPosition&&solidAt(outdoor,p.returnPosition.x,p.returnPosition.y))p.returnPosition={...outdoor.spawn!};
       store.savePlayer(p);
     }
-    store.setMeta('lastLayoutMigrationBackup','backups/'+backupName);store.setMeta('layoutVersion',String(LAYOUT_VERSION));
+    store.setMeta('lastLayoutMigrationBackup',backupPath?'backups/'+backupPath.split(/[\\/]/).pop():'unavailable');store.setMeta('layoutVersion',String(LAYOUT_VERSION));
   });return {upgraded:replacements.size,movedPlayers,backupPath};
 }

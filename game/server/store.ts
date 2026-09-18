@@ -48,6 +48,11 @@ export class Store {
   saveNpc(id:string,npc:NpcMemory) { this.db.prepare('INSERT INTO npcs VALUES (?,?) ON CONFLICT(region_id) DO UPDATE SET data=excluded.data').run(id,JSON.stringify(npc)); }
   event(playerId:string|null,regionId:string,kind:string,text:string) { this.db.prepare('INSERT INTO events(at,player_id,region_id,kind,text) VALUES (?,?,?,?,?)').run(Date.now(),playerId,regionId,kind,text); }
   events(limit=30):WorldEvent[] { return this.db.prepare('SELECT seq,at,player_id as playerId,region_id as regionId,kind,text FROM events ORDER BY seq DESC LIMIT ?').all(limit) as unknown as WorldEvent[]; }
+  eventsFor(playerId: string): { kind: string; text: string; regionId: string }[] { return this.db.prepare('SELECT kind,text,region_id as regionId FROM events WHERE player_id=? ORDER BY seq').all(playerId) as unknown as { kind: string; text: string; regionId: string }[]; }
+  markInterruptedJobs() { this.db.prepare("UPDATE jobs SET status='interrupted' WHERE status='running'").run(); }
+  npcMotion(id: string): string | undefined { const row = this.db.prepare('SELECT data FROM npc_motion WHERE id=?').get(id); return row ? String(row.data) : undefined; }
+  saveNpcMotion(id: string, data: string) { this.db.prepare('INSERT INTO npc_motion VALUES(?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(id, data); }
+  backupDatabase(tag: string) { const dir = join(this.root, 'backups'); mkdirSync(dir, { recursive: true }); const path = join(dir, tag + '-' + Date.now() + '-' + randomUUID().slice(0, 8) + '.sqlite'); this.db.prepare('VACUUM INTO ?').run(path); return path; }
   sequence() { return Number(this.db.prepare('SELECT COALESCE(MAX(seq),0) as seq FROM events').get()!.seq); }
   hasReceipt(pid:string,id:string) { return !!this.db.prepare('SELECT 1 FROM receipts WHERE player_id=? AND command_id=?').get(pid,id); }
   receiptResult<T>(pid:string,id:string):T|undefined { const row=this.db.prepare('SELECT result FROM receipts WHERE player_id=? AND command_id=?').get(pid,id);return row?JSON.parse(String(row.result)) as T:undefined; }

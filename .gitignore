@@ -3,6 +3,8 @@ node_modules/
 /dist/
 /dist-server/
 /out/
+/public/
+/.next/
 /release/
 /coverage/
 /.vite/
@@ -94,3 +96,5 @@ id_ed25519
 
 # Runtime generation artifacts are private to each saved run.
 **/generated-content/
+
+.vercel

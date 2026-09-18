@@ -1,13 +1,14 @@
-import {createHash,randomUUID} from 'node:crypto';
-import type {Store} from '../server/store.js';
+import type {WorldStore} from './store.js';
+import {sha256Hex} from '../shared/sha256.js';
 import {SPECIES,ATTACK_PP,hashSeed,creatureInfo,creatureKey,type Creature,type Player,type Region,type Species} from '../shared/model.js';
 import {ITEMS,BICYCLE,EXTRA_CREATURES,TRAITS,type Trait,type CreatureProfile,type ItemProfile,type VehicleProfile,type NpcTraits,type VarietyState} from '../shared/content.js';
 import {getScene,objectInFront} from '../shared/scene.js';
 
-const idFor=(prefix:string,value:unknown)=>prefix+'-'+createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0,24);
+const randomUUID=()=>crypto.randomUUID();
+const idFor=(prefix:string,value:unknown)=>prefix+'-'+sha256Hex(JSON.stringify(value)).slice(0,24);
 export class ContentSystem {
   private cache=new Map<string,{hash:string;creatures:CreatureProfile[];items:ItemProfile[];vehicles:VehicleProfile[]}>();
-  constructor(public store:Store){for(const profile of EXTRA_CREATURES)store.define('creature',profile.id,profile);}
+  constructor(public store:WorldStore){for(const profile of EXTRA_CREATURES)store.define('creature',profile.id,profile);}
   region(region:Region){
     const cached=this.cache.get(region.id);if(cached?.hash===region.hash)return cached;
     const signature=(blueprint:CreatureProfile|NonNullable<Region['creatures']>[number])=>idFor('species',{name:blueprint.name.trim().toLowerCase(),base:blueprint.base,types:[...new Set(blueprint.types)],art:{...blueprint.art,primary:blueprint.art.primary.toLowerCase(),accent:blueprint.art.accent.toLowerCase()}});
@@ -22,7 +23,7 @@ export class ContentSystem {
   }
   initialize(player:Player){
     player.items??={};player.ownedVehicles??=[];player.repelSteps??=0;
-    if(!player.stats){const captures=this.store.db.prepare("SELECT text FROM events WHERE player_id=? AND kind='capture'").all(player.id);const species=new Set<string>();for(const event of captures)for(const [id,definition] of Object.entries(SPECIES))if(String(event.text).endsWith(' caught '+definition.name+'.'))species.add(id);player.stats={captures:captures.length,caughtSpecies:[...species],defeatedTrainers:[...new Set(this.store.db.prepare("SELECT region_id FROM events WHERE player_id=? AND kind='battle' AND text LIKE '% won a trainer battle.'").all(player.id).map(row=>String(row.region_id)+":outdoor:trainer"))],tiles:0,trackingSince:Date.now()};}
+    if(!player.stats){const events=this.store.eventsFor(player.id);const captures=events.filter(event=>event.kind==='capture');const species=new Set<string>();for(const event of captures)for(const [id,definition] of Object.entries(SPECIES))if(String(event.text).endsWith(' caught '+definition.name+'.'))species.add(id);player.stats={captures:captures.length,caughtSpecies:[...species],defeatedTrainers:[...new Set(events.filter(event=>event.kind==='battle'&&event.text.endsWith(' won a trainer battle.')).map(event=>event.regionId+':outdoor:trainer'))],tiles:0,trackingSince:Date.now()};}
     for(const creature of [...player.party,...player.storage])creature.traits??=[(['curious','swift','radiant'] as Trait[])[hashSeed(creature.id)%3]];
   }
   make(species:Species,level=5,profile?:CreatureProfile,traits?:Trait[]):Creature {

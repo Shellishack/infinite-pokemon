@@ -1,17 +1,17 @@
 import {DIRECTIONS,WIDTH,HEIGHT,type Region,type Player,type SceneObject,type MovementState} from '../shared/model.js';
 import {getScene,sceneObjects,solidAt,objectContains} from '../shared/scene.js';
-import type {Store} from '../server/store.js';
+import type {WorldStore} from './store.js';
 import type {NpcBehavior} from '../shared/world-design.js';
 
 interface Pose {x:number;y:number;facing:keyof typeof DIRECTIONS;step:number;nextAt:number;sourceHash:string;motion?:MovementState;waypoint:number}
 const distance=(a:{x:number;y:number},b:{x:number;y:number})=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 const protectedRole=(npc:SceneObject)=>['healer','merchant','breeder'].includes(npc.role??'');
 export class NpcRuntime {
-  constructor(private store:Store){}
+  constructor(private store:WorldStore){}
   private key(region:Region,npc:SceneObject){return `${region.id}:${region.sceneId??'outdoor'}:${npc.id}`;}
   private pose(region:Region,npc:SceneObject):Pose|undefined{
-    const row=this.store.db.prepare('SELECT data FROM npc_motion WHERE id=?').get(this.key(region,npc));
-    const pose=row?JSON.parse(String(row.data)) as Pose:undefined;return pose?.sourceHash===(region.staticHash??region.hash)?pose:undefined;
+    const data=this.store.npcMotion(this.key(region,npc));
+    const pose=data?JSON.parse(data) as Pose:undefined;return pose?.sourceHash===(region.staticHash??region.hash)?pose:undefined;
   }
   scene(region:Region,sceneId?:string,now=Date.now()):Region{
     const scene=getScene(region,sceneId),staticHash=scene.staticHash??scene.hash;
@@ -54,7 +54,7 @@ export class NpcRuntime {
           pose.motion={seq:pose.step+1,fromX:pose.x,fromY:pose.y,toX:x,toY:y,startedAt:now,duration:320,accepted:true};pose.x=x;pose.y=y;pose.facing=facing;break;
         }
         pose.step++;pose.nextAt=now+behavior.intervalSeconds*1000;
-        this.store.db.prepare('INSERT INTO npc_motion VALUES(?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(this.key(base,home),JSON.stringify(pose));
+        this.store.saveNpcMotion(this.key(base,home),JSON.stringify(pose));
       }
     }
   }
