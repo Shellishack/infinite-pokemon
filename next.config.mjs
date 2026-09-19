@@ -5,7 +5,7 @@ const config={
   reactStrictMode:true,
   env:{
     // Canonical production origin used by metadata/sitemap. Set SITE_URL at deploy time.
-    SITE_URL:process.env.SITE_URL||'https://infinite-pokemon.vercel.app',
+    SITE_URL:process.env.SITE_URL||'https://infinite-pokemon-blond.vercel.app',
   },
   // The shared game code uses NodeNext-style `.js` import specifiers for the
   // server's ESM build; teach the web bundler to resolve them to source files.

@@ -2,7 +2,7 @@
 
 Publication links rechecked 19 September 2026. The entry skill and three generation skills are version 0.3.0, which adds the hosted website and browser demo to the skill instructions.
 
-[Repository](https://github.com/Shellishack/infinite-pokemon) · [Versioned ZIP bundles](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.3.0) · [Website and browser demo](https://infinite-pokemon-clay-pulse.vercel.app) · [Skill instructions and installation](../skills/README.md)
+[Repository](https://github.com/Shellishack/infinite-pokemon) · [Versioned ZIP bundles](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.3.0) · [Website and browser demo](https://infinite-pokemon-blond.vercel.app/) · [Skill instructions and installation](../skills/README.md)
 
 | Destination | Verified status |
 | --- | --- |

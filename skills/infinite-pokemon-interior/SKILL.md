@@ -22,7 +22,7 @@ cd infinite-pokemon
 
 Read the cloned repository's `README.md` (or `README.zh-CN.md`) and follow its getting-started instructions to install dependencies, build, launch, and connect Codex. The checkout contains all three skills, game code, schemas, and bundled content. Reuse an existing complete checkout; do not overwrite directories, saves, or local changes. If cloning fails, report the failure rather than inventing missing files or claiming the game is ready.
 
-Players who only want to try the game can also open the hosted browser demo at https://infinite-pokemon-clay-pulse.vercel.app/game/ — five prepared maps, no install or sign-in, with progress exportable into the full game for continued play.
+Players who only want to try the game can also open the hosted browser demo at https://infinite-pokemon-blond.vercel.app/game/ — five prepared maps, no install or sign-in, with progress exportable into the full game for continued play.
 
 This setup step applies when helping a user install or start the game. During an already-running host generation job, use the supplied local files; do not clone, install dependencies, or launch another game. Missing job-specific context must be reported to the host: cloning source cannot recover private saved context.
 

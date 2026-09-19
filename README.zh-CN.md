@@ -1,18 +1,48 @@
 # Infinite Pokémon（无限宝可梦）
 
-[English](README.md) | **简体中文** · [官网与浏览器试玩版](https://infinite-pokemon.vercel.app) · [Discord 社区](https://discord.gg/kKbY8xaVxG) · [GitHub 仓库](https://github.com/Shellishack/infinite-pokemon) · [技能下载](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.2.0) · [技术报告 v0.4（PDF，暂定稿）](docs/technical-report/Infinite-Pokemon-Technical-Report-v0.4.pdf)
+[English](README.md) | **简体中文** · [官网与浏览器试玩版](https://infinite-pokemon-blond.vercel.app/) · [Discord 社区](https://discord.gg/kKbY8xaVxG) · [GitHub 仓库](https://github.com/Shellishack/infinite-pokemon) · [技能下载](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.2.0) · [技术报告 v0.4（PDF，暂定稿）](docs/technical-report/Infinite-Pokemon-Technical-Report-v0.4.pdf)
 
-## 让 AI 帮你开始游戏
+## 从这里开始
 
 ```sh
 npx skills add Shellishack/infinite-pokemon --skill infinite-pokemon
 ```
 
-然后告诉 Codex（或兼容的 AI 助手）：**“使用 $infinite-pokemon，帮我配置并启动游戏。”** 入口技能会指导 AI 克隆缺失的游戏文件、检查环境、安装依赖、构建并启动。你在游戏内完成 Codex 登录与额度授权，或选择无需 AI 的教程预览。
+然后告诉 Codex（或兼容的 AI 助手）：**“使用 $infinite-pokemon，帮我配置并启动游戏。”** 入口技能会克隆缺失的游戏文件、检查环境、安装依赖、构建并启动游戏。
 
 安装技能本身不会启动软件。Skills CLI 需要仓库来源，单独的 `npx skills add infinite-pokemon` 不是受支持的全局别名。详见[入口技能](skills/infinite-pokemon/SKILL.md)。
 
-### 在哪里下载技能
+![Infinite Pokémon](game/assets/branding/infinite-pokemon-logo.svg)
+
+**冒险，永不落幕。**
+
+[试玩浏览器版](https://infinite-pokemon-blond.vercel.app/game/) · [从源码运行](#在电脑上运行) · [查看技能](#下载技能)
+
+![项目介绍：你的游戏过程成为上下文，帮助 Codex 生成下一段冒险](docs/assets/infinite-pokemon-intro.gif)
+
+*35 秒了解核心循环：游玩、记录经历，再让 Codex 为接下来的冒险提出内容。*
+
+Infinite Pokémon 探索一个想法：游戏世界能否随着你的游玩不断续写？当你走向新的区域，本地 AI 执行环境会读取当前存档的经历，为新的地点、角色、对话和剧情线索提出方案；当你回到旧地点，那里仍保留在同一个世界中。
+
+这是一个使用 TypeScript 开发、具有经典宝可梦像素风格的可玩原型。目标是让冒险持续延伸，同时保持操作和规则可靠。“无限”代表设计愿景，并不意味着已经实现无限的内容质量、长期剧情一致性或零等待体验。生成时间、存储、模型额度以及引擎支持的内容类型仍然存在限制。
+
+## 游戏展示
+
+| 探索持续存在的世界 | 战斗并收服伙伴 |
+| --- | --- |
+| ![在 Infinite Pokémon 中探索原野](game/assets/showcase/exploration.png) | ![Infinite Pokémon 中的回合制战斗](game/assets/showcase/battle.png) |
+
+| 探索有陈设的室内空间 | 回到一个记得你的世界 |
+| --- | --- |
+| ![费恩教授的实验室内部](game/assets/showcase/interior.png) | ![城镇地图上持续存在的地点](game/assets/showcase/continuity.png) |
+
+无需安装的浏览器试玩版包含五个预制区域、战斗、收服、室内场景和本地自动存档。完整游戏会连接本地 Codex，让世界继续生长。多人模式允许朋友共享主机的世界，只有主机需要提供生成额度。
+
+> **仅供教育与非商业用途。** 本项目是实验性的爱好者作品，并非官方宝可梦产品，与 Nintendo、Creatures、GAME FREAK 或 The Pokémon Company 无关联，也未获得其背书。
+>
+> **由 Codex 生成。** 人类提供大致的想法，OpenAI Codex 据此生成项目代码、文档和开发工具。引入的第三方依赖与参考素材并非 Codex 原创，其所有权及许可条款仍然适用。详见[免责声明](DISCLAIMER.md)与[素材来源](game/assets/classic/CREDITS.md)。四个独立技能指令包获准采用 MIT-0，具体范围见下文。
+
+## 下载技能
 
 入口技能和三个生成技能已发布到以下平台：
 
@@ -24,22 +54,6 @@ npx skills add Shellishack/infinite-pokemon --skill infinite-pokemon
 | **GitHub** | [入口技能源码](skills/infinite-pokemon/SKILL.md) | [v0.2.0 ZIP 下载](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.2.0) |
 
 [SkillsMP](https://skillsmp.com/search?q=infinite-pokemon) 也已按其文档要求，通过 GitHub Topics 提交自动收录，但目前尚未出现公开条目，因此暂时不能作为下载入口。详情见[发布状态与许可说明](docs/SKILL-DISTRIBUTION.md)。
-
-> **仅供教育与非商业用途。** 本项目是实验性的爱好者作品，并非官方宝可梦产品，与 Nintendo、Creatures、GAME FREAK 或 The Pokémon Company 无关联，也未获得其背书。
->
-> **由 Codex 生成。** 人类提供大致的想法，OpenAI Codex 据此生成项目代码、文档和开发工具。引入的第三方依赖与参考素材并非 Codex 原创，其所有权及许可条款仍然适用。详见[免责声明](DISCLAIMER.md)与[素材来源](game/assets/classic/CREDITS.md)。四个独立技能指令包获准采用 MIT-0，具体范围见下文。
-
-![Infinite Pokémon](game/assets/branding/infinite-pokemon-logo.svg)
-
-**冒险，永不落幕。**
-
-![项目介绍：你的游戏过程成为上下文，帮助 Codex 生成下一段冒险](docs/assets/infinite-pokemon-intro.gif)
-
-*35 秒了解核心循环：游玩、记录经历，再让 Codex 为接下来的冒险提出内容。*
-
-Infinite Pokémon 探索一个想法：游戏世界能否随着你的游玩不断续写？当你走向新的区域，本地 AI 执行环境会读取当前存档的经历，为新的地点、角色、对话和剧情线索提出方案；当你回到旧地点，那里仍保留在同一个世界中。
-
-这是一个使用 TypeScript 开发、具有经典宝可梦像素风格的可玩原型。目标是让冒险持续延伸，同时保持操作和规则可靠。“无限”代表设计愿景，并不意味着已经实现无限的内容质量、长期剧情一致性或零等待体验。生成时间、存储、模型额度以及引擎支持的内容类型仍然存在限制。
 
 ## 世界如何继续生长
 

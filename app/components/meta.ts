@@ -1,7 +1,7 @@
 import type {Metadata} from 'next';
 import {copyFor, localePath, type Locale} from '../content';
 
-const siteUrl=()=>process.env.SITE_URL||'https://infinite-pokemon.vercel.app';
+const siteUrl=()=>process.env.SITE_URL||'https://infinite-pokemon-blond.vercel.app';
 
 export function pageMetadata(locale:Locale,path:string,title:string,description:string):Metadata{
   const en=`${siteUrl()}${localePath('en',path)}`;

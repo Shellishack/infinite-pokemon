@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 import '../../globals.css';
 
 export const metadata:Metadata={
-  metadataBase:new URL(process.env.SITE_URL||'https://infinite-pokemon.vercel.app'),
+  metadataBase:new URL(process.env.SITE_URL||'https://infinite-pokemon-blond.vercel.app'),
   title:'Play — Infinite Pokémon',
   icons:{icon:'/branding/app-icon.svg'},
 };
