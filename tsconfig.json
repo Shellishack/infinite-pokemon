@@ -20,20 +20,13 @@
     ],
     "allowJs": true,
     "incremental": true,
-    "isolatedModules": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
+    "isolatedModules": true
   },
   "include": [
     "game",
     "tests",
     "vite.config.ts",
-    "scripts",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    "scripts"
   ],
   "exclude": [
     "node_modules"

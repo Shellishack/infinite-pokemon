@@ -1,5 +1,7 @@
 # Infinite Pokémon
 
+The [website and browser demo](https://infinite-pokemon-blond.vercel.app) are maintained in the separate `Shellishack/infinite-pokemon-website` repository. This repository builds the standalone local/Electron game with Vite; its entry is `/game/` (the root remains a compatibility entry). Website deployment is independent of game releases.
+
 **English** | [简体中文](README.zh-CN.md) · [Website & browser demo](https://infinite-pokemon-blond.vercel.app/) · [Discord](https://discord.gg/kKbY8xaVxG) · [GitHub repository](https://github.com/Shellishack/infinite-pokemon) · [Technical report v0.4 (PDF, provisional)](docs/technical-report/Infinite-Pokemon-Technical-Report-v0.4.pdf)
 
 ## Start here

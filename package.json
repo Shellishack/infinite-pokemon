@@ -11,9 +11,7 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "dev": "tsx game/server/index.ts",
-    "dev:web": "node scripts/sync-public-assets.mjs && next dev --webpack",
-    "sync:assets": "node scripts/sync-public-assets.mjs",
-    "build": "tsc --noEmit && npm run sync:assets && next build --webpack && tsc -p tsconfig.server.json",
+    "build": "tsc --noEmit && vite build && tsc -p tsconfig.server.json",
     "build:server": "tsc -p tsconfig.server.json",
     "build:game": "vite build",
     "start": "node dist-server/game/server/index.js",
@@ -35,16 +33,12 @@
     "audio:sfx": "tsx scripts/compose-sfx.ts",
     "audio:all": "npm run audio:compose && npm run audio:sfx",
     "test:sfx": "tsx tests/sfx-e2e.ts",
-    "icon:build": "tsx scripts/build-icon.ts",
-    "capture:showcase": "tsx scripts/capture-showcase.ts",
-    "test:demo": "tsx tests/demo-smoke.ts"
+    "icon:build": "tsx scripts/build-icon.ts"
   },
   "dependencies": {
     "@fontsource/press-start-2p": "^5.2.6",
     "@fontsource/vt323": "^5.2.5",
     "@openai/codex": "0.153.4",
-    "@vercel/analytics": "^2.0.1",
-    "next": "^16.3.5",
     "phaser": "3.90.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

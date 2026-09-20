@@ -57,7 +57,7 @@ async function startServer() {
         try {
           const response = await fetch(endpoint + '/api/info', { signal: AbortSignal.timeout(600) });
           if (response.ok) {
-            // The exported website serves the game client at /game/.
+            // The standalone game server serves its Vite client at /game/.
             const info = await response.json().catch(() => ({}));
             let url = (info.gameBase && info.gameBase !== '/') ? endpoint + info.gameBase : endpoint;
             if (info.gameBase && info.gameBase !== '/') url += '?embed=1';

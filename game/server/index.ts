@@ -128,11 +128,9 @@ export async function createGameServer(options:ServerOptions={}):Promise<GameSer
     }catch(error){if(closedStores)reopen(false);throw error;}
     finally{resetting=false;saveLibrary.closing=false;}
   }
-  // The exported website (Next.js static export in out/) is served when present;
-  // the game client lives at /game/ inside it. Fall back to the legacy Vite dist/.
-  const exportRoot=resolve('out');
-  const exportReady=existsSync(join(exportRoot,'index.html'));
-  const gameBase=exportReady?'/game/':'/';
+  // The standalone game always uses the Vite build. Website exports belong to
+  // infinite-pokemon-website; ignore any stale out/ directory from older builds.
+  const gameBase='/game/';
   const vite=options.dev?await(await import('vite')).createServer({server:{middlewareMode:true,hmr:false,ws:false,watch:options.fixture?null:{ignored:['**/.test-data/**','**/context/**','**/generation/**','**/generated-content/**',store.root.replaceAll('\\','/')+'/**']},fs:{deny:['.env','.env.*','*.{crt,pem}','**/.git/**','**/*.sqlite*','**/context/**','**/generation/**','**/generated-content/**',store.root.replaceAll('\\','/')+'/**']}},appType:'spa'}):null;
   const rates=new Map<string,{at:number,count:number}>();
   async function configure<T>(run:()=>Promise<T>){configuring=true;try{return await run();}finally{configuring=false;}}
@@ -261,17 +259,17 @@ export async function createGameServer(options:ServerOptions={}):Promise<GameSer
       }
       if(url.pathname.startsWith('/api/'))return send(res,404,{error:'Not found.'});
       if(vite){vite.middlewares(req,res,()=>send(res,404,{error:'Not found.'}));return;}
-      const root=exportRoot&&existsSync(join(exportRoot,'index.html'))?exportRoot:resolve('dist');
+      const root=resolve('dist');
       const pathname=decodeURIComponent(url.pathname);
       let file=resolve(root,'.'+pathname);
       const safe=file===root||file.startsWith(root+'/')||file.startsWith(root+'\\');if(!safe)return send(res,403,{error:'Invalid path.'});
       if(existsSync(file)&&statSync(file).isDirectory())file=join(file,'index.html');
       if(!existsSync(file)&&!extname(file)&&existsSync(file+'.html'))file=file+'.html';
       if(!existsSync(file)){
-        if(!extname(pathname)&&!exportReady){const fallback=join(root,'index.html');if(existsSync(fallback))file=fallback;}
+        if(pathname==='/'||pathname==='/game'||pathname==='/game/'){const fallback=join(root,'index.html');if(existsSync(fallback))file=fallback;}
         else{const notFound=join(root,'404.html');if(existsSync(notFound)){res.writeHead(404,{'Content-Type':'text/html; charset=utf-8'});createReadStream(notFound).pipe(res);return;}}
       }
-      if(!existsSync(file))return send(res,503,{error:'Build the client with npm run build before starting production.'});
+      if(!existsSync(file))return send(res,existsSync(join(root,'index.html'))?404:503,{error:existsSync(join(root,'index.html'))?'Not found.':'Build the client with npm run build before starting production.'});
       const types:Record<string,string>={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.woff':'font/woff','.woff2':'font/woff2','.wav':'audio/wav','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.json':'application/json','.txt':'text/plain'};
       res.writeHead(200,{'Content-Type':types[extname(file)]??'application/octet-stream'});createReadStream(file).pipe(res);
     }catch(e){send(res,400,{error:e instanceof z.ZodError?e.issues[0].message:(e as Error).message});}

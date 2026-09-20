@@ -6,19 +6,17 @@ A self-hosted, Pokémon-style adventure. Two runtimes share one engine:
 
 - **Local game** — Node server (`game/server/`) + SQLite (`node:sqlite`), WebSocket
   protocol on `/play`, REST under `/api/`, Electron shell in `desktop/` (loads the
-  exported site's `/game/` route inside its iframe).
-- **Website + browser demo** — Next.js App Router static export (`output: 'export'`,
-  `trailingSlash: true`, webpack build via `next build --webpack` because shared code
-  uses NodeNext `.js` import specifiers; `next.config.mjs` maps them via
-  `resolve.extensionAlias`). The demo runs the engine in a Web Worker
-  (`game/browser/worker.ts`) over an in-memory store snapshotted to IndexedDB.
+  standalone Vite client's `/game/` route inside its iframe).
+- **Website + browser demo** — now maintained and deployed independently from
+  `C:/GitHub/infinite-pokemon-website` (`Shellishack/infinite-pokemon-website`).
+  That repository owns the Next.js pages and a versioned browser runtime snapshot.
+  This repository remains the source of truth for the shared game code.
 
 ## Key directories
 
-- `app/` — website: `(en)`, `(zh)`, `(game)` route groups each with their own root
-  layout (multiple-root-layout i18n). Copy lives in `app/content.ts` (EN + zh-CN).
-  `public/` is GENERATED: `npm run sync:assets` copies `game/assets/` into it; never
-  edit files in `public/` directly.
+- Website pages, website copy, showcase capture and static-demo smoke tests live
+  in the separate website repository. Ignore stale local `out/`, `.next/` and
+  `public/` directories here; the local server only serves `dist/`.
 - `game/engine/` — gameplay rules. Must stay free of Node builtins (no `node:*`,
   no `node:sqlite`). Persistence goes through the `WorldStore` interface in
   `game/engine/store.ts`; platform backups via optional `backupDatabase`.
@@ -35,22 +33,20 @@ A self-hosted, Pokémon-style adventure. Two runtimes share one engine:
 
 ## Commands
 
-- `npm run build` — typecheck, sync assets, static-export site to `out/`, build server.
+- `npm run build` — typecheck, build Vite client to `dist/`, build Node server.
 - `npm run dev` — dev server with Vite middleware (legacy client dev flow; client
   entry `game/client/index.html` + `main.tsx` kept for this).
-- `npm run dev:web` — Next dev server for the site.
-- `npm test` — node:test unit/integration suite. `npm run test:demo` — Playwright
-  smoke of the browser demo (play → reload/resume → export). Requires `out/`.
-- `npm run capture:showcase` — replays the demo headlessly and captures the four
-  landing-page screenshots into `game/assets/showcase/`.
+- `npm test` — node:test unit/integration suite. Website build and browser-demo
+  smoke tests run from the website repository.
 
 ## Conventions and invariants
 
 - Never move `game/assets/` (referenced by scripts, tests, Electron). Showcase
   screenshots go in `game/assets/showcase/`.
-- Website copy is bilingual from `app/content.ts`; game dialogue stays English.
+- Website copy is bilingual in the website repository; game dialogue stays English.
 - The exported web bundle must never contain Node server code, SQLite, Codex, or
   private runtime data — verify with a grep over `out/_next` after changing deps.
 - Demo saves are portable JSON (`format: 'infinite-pokemon-save'`, `formatVersion: 1`);
   import always creates a NEW isolated preview run and never overwrites local saves.
-- Do not commit changes to `infinite-pokemon-website/` (abandoned directory).
+- The sibling `C:/GitHub/infinite-pokemon-website` is now the active independent
+  website repository. Commit website changes there, not into this game's repository.
