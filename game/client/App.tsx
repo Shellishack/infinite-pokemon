@@ -20,10 +20,9 @@ import {DemoSocket,acquireDemoSocket,type DemoHello} from './demo-transport';
 import {reportGlobalProgress} from './progress-reporting';
 const GameCanvas=lazy(()=>import('./GameCanvas'));
 
-// Vercel Analytics custom events. Never carries save contents or trainer text —
-// event names only. No-ops outside the Vercel-hosted site.
-let analyticsEvents: Set<string> | null = null;
-function trackEvent(name: string){try{analyticsEvents??=new Set();if(analyticsEvents.has(name))return;analyticsEvents.add(name);void import('@vercel/analytics').then(({track})=>track(name));}catch{/* analytics unavailable */}}
+// Funnel analytics belong to the website snapshot. The standalone game only
+// reports its public progress summary through progress-reporting.ts.
+function trackEvent(_name:string){}
 
 export const DOWNLOAD_URL='https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.2.0';
 export const TAKE_FURTHER_COPY='Take your adventure further. Download the game, import your save, and connect Codex to generate new places.';
