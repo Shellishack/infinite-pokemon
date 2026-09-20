@@ -2,6 +2,8 @@
 
 The [website and browser demo](https://infinite-pokemon-blond.vercel.app) are maintained in the separate `Shellishack/infinite-pokemon-website` repository. This repository builds the standalone local/Electron game with Vite; its entry is `/game/` (the root remains a compatibility entry). Website deployment is independent of game releases.
 
+The game reports a small public progress summary to the website leaderboard: trainer name, tutorial milestone, map/species/capture/trainer counts, explored tiles, and steps. It does not upload saves, party details, journal text, credentials, or Codex data. Reports never block gameplay and the community leaderboard is not a cheat-proof competition.
+
 **English** | [简体中文](README.zh-CN.md) · [Website & browser demo](https://infinite-pokemon-blond.vercel.app/) · [Discord](https://discord.gg/kKbY8xaVxG) · [GitHub repository](https://github.com/Shellishack/infinite-pokemon) · [Technical report v0.4 (PDF, provisional)](docs/technical-report/Infinite-Pokemon-Technical-Report-v0.4.pdf)
 
 ## Start here

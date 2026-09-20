@@ -17,6 +17,7 @@ import VarietyPanels,{type VarietyTab} from './VarietyPanels';
 import {creatureImage} from './content-art';
 import {creatureInfo} from '../shared/model';
 import {DemoSocket,acquireDemoSocket,type DemoHello} from './demo-transport';
+import {reportGlobalProgress} from './progress-reporting';
 const GameCanvas=lazy(()=>import('./GameCanvas'));
 
 // Vercel Analytics custom events. Never carries save contents or trainer text —
@@ -140,6 +141,7 @@ export default function App({siteLocale}:{siteLocale?:'en'|'zh-CN'}={}){
     if(!milestones.current.battle&&me.stats&&me.stats.captures+me.stats.defeatedTrainers.length>0){milestones.current.battle=true;trackEvent('demo_first_battle_complete');}
     if(!milestones.current.tutorial&&me.tutorial>=5){milestones.current.tutorial=true;trackEvent('demo_tutorial_complete');}
   },[demo,state]);
+  useEffect(()=>{if(state)reportGlobalProgress(state,demo?'browser':'local');},[state,demo]);
   // Test/screenshot hook, active only with ?demo-debug=1 on the static export.
   useEffect(()=>{if(new URLSearchParams(location.search).has('demo-debug'))(window as unknown as {__demoTeleport?:(x:number,y:number,sceneId?:string)=>void}).__demoTeleport=(x,y,sceneId)=>demoSocket.current?.control({type:'debug-teleport',x,y,sceneId});},[demo]);
   const playPreview=()=>run('Opening tutorial preview',async()=>{setAutoEnter(false);const result=await hostAction('preview');const url=new URL(result.previewUrl);url.pathname=info?.gameBase??'/';url.search='';url.searchParams.set('preview','1');location.assign(url.href);});

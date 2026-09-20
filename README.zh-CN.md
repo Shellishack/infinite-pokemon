@@ -2,6 +2,8 @@
 
 [官网与浏览器演示](https://infinite-pokemon-blond.vercel.app) 已迁至独立仓库 `Shellishack/infinite-pokemon-website`。本仓库使用 Vite 构建本地／Electron 游戏，入口为 `/game/`（根路径保留兼容入口）。官网部署与游戏发布相互独立。
 
+游戏会向官网排行榜报告少量公开进度汇总:训练家名称、教程里程碑、地图／物种／捕捉／训练家统计、探索格数与步数。游戏不会上传存档、队伍详情、日志文本、凭据或 Codex 数据。报告失败不会影响游戏;社区排行榜并非防作弊竞技排名。
+
 [English](README.md) | **简体中文** · [官网与浏览器试玩版](https://infinite-pokemon-blond.vercel.app/) · [Discord 社区](https://discord.gg/kKbY8xaVxG) · [GitHub 仓库](https://github.com/Shellishack/infinite-pokemon) · [技能下载](https://github.com/Shellishack/infinite-pokemon/releases/tag/skills-v0.2.0) · [技术报告 v0.4（PDF，暂定稿）](docs/technical-report/Infinite-Pokemon-Technical-Report-v0.4.pdf)
 
 ## 从这里开始
